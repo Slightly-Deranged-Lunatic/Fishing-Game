@@ -1,9 +1,14 @@
 import random
 import json
+import os
+import sys
 from time import sleep
 from normal_words_list import words
-from stored_save_data import save_data, inventory, user_save_slots
-
+original_working_directory = os.getcwd()
+os.chdir("saves")
+sys.path.append(os.getcwd())
+os.chdir(original_working_directory)
+from default_stored_save_data import save_data, inventory, user_save_slots, default_save_attributes
 
 def main(inventory, save_data):
     last_action = "save data"
@@ -20,7 +25,7 @@ def main(inventory, save_data):
                 confirm_exit_without_save = input('You are about to quit without saving, type "yes" to confirm you want to do this and anything else to go back to save. ')
             if last_action == "save data" or confirm_exit_without_save == "yes":
                 print("Sad to see you go! Goodbye!")
-                break
+                raise SystemExit()
         elif action == "view wallet":
             print(save_data["money"])
         elif action == "view inventory":
@@ -49,15 +54,14 @@ def selling(inventory, save_data):
     }
     while True:
         keep_dupes_or_not = input(f'Sell everything or only duplicates? Type "duplicates" to sell only duplicates, and "everything" to sell everything. ').lower()
-        if keep_dupes_or_not == "quit":
-            break
-        elif keep_dupes_or_not == "everything":
+        if keep_dupes_or_not == "everything":
             for item, amount in list(inventory.items()):
                 if item in SELL_VALUES:
                     for count in range(amount):
                         save_data["money"] = save_data["money"] + SELL_VALUES.get(item)
                     del inventory[item]
             print("Transaction completed.")
+            break
         elif keep_dupes_or_not == "duplicates":
             for item, amount in list(inventory.items()):
                 for count in range(amount):
@@ -67,6 +71,9 @@ def selling(inventory, save_data):
                         break
                     inventory[item] = 1
             print("Transaction completed.")
+            break
+        elif keep_dupes_or_not == "quit":
+            break
         else:
             print("Sorry what you entered isn't an action, please try again")
 
@@ -86,8 +93,8 @@ def buying(inventory, save_data):
                 user_can_buy = True
             else:
                 print("Sorry you don't have enough money for this.")
-                break
-            confirmation = input(f'Are you would like to buy a {choice_to_buy}? Type "yes" to confirm your choice. ').lower()
+                continue
+            confirmation = input(f'Are you sure you would like to buy a {choice_to_buy} for {SHOP_INVENTORY.get(choice_to_buy)} coins? Type "yes" to confirm your choice. ').lower()
             if confirmation == "yes" and user_can_buy:
                 save_data["money"] = save_data["money"] - SHOP_INVENTORY.get(choice_to_buy)
                 inventory[choice_to_buy] = 1
@@ -114,14 +121,14 @@ def fishing(inventory, save_data):
                 inventory[catch] = inventory[catch] + 1
             else:
                 inventory[catch] = 1
-            wants_to_see_inv = input(f"You caught a {catch}! Press y to see your whole inventory, or anything else to continue. ").lower()
-            if wants_to_see_inv == "y":
+            wants_to_see_inventory = input(f'You caught a {catch}! Press "y" to see your whole inventory, or "quit" to stop fishing. Press enter to fish again. ').lower()
+            if wants_to_see_inventory == "y":
                 print_inventory(inventory)
                 while True:
-                    ready_to_catch_more_fish = input("Press enter when you are ready to catch more fish.")
+                    ready_to_catch_more_fish = input("Press enter when you are ready to catch more fish. ")
                     if ready_to_catch_more_fish == "":
                         break
-            if wants_to_see_inv == "quit":
+            if wants_to_see_inventory == "quit":
                 break
         elif typed_word == "quit":
             break
@@ -137,17 +144,22 @@ def accessing_shop(inventory, save_data):
             selling(inventory, save_data)
         elif buy_or_sell == "quit":
             break
+        else:
+            print("That wasn't a valid action.")
 
 def save_data_from_session(inventory, save_data):
-    save_data_store = open("stored_save_data.py", "w")
+    os.chdir("saves")
+    save_slot = "default"
+    save_data_store = open(f"{save_slot}_stored_save_data.py", "w")
     save_data_store.write(f"inventory = {json.dumps(inventory)}")
     save_data_store.write(f"\nsave_data = {json.dumps(save_data)}")
+    save_data_store.write(f"\ndefault_save_attributes = {json.dumps(default_save_attributes)}")
     save_data_store.write(f"\nuser_save_slots = {json.dumps(user_save_slots)}")
     print("Data stored!")
 
 def save_slot_customization(user_save_slots):
     while True:
-        AVAILABLE_SLOT_ACTIONS = ["delete", "rename"]
+        AVAILABLE_SLOT_ACTIONS = ["delete", "rename", "make default"]
         print("Here is a list of your current saves.")
         user_save_slots.sort()
         for save in user_save_slots:
@@ -155,6 +167,8 @@ def save_slot_customization(user_save_slots):
         slot_to_customize = input('''What slot would you like customize? You can type the name of a slot that doesn't exist to create one. or "quit" to exit''')
         if slot_to_customize not in user_save_slots and slot_to_customize != "quit":
             user_save_slots.append(slot_to_customize)
+            new_save_slot = open(f"{slot_to_customize}_stored_save_data.py", "w")
+            new_save_slot.write("new_save = True")
         elif slot_to_customize == "quit":
             break
         else:
@@ -171,8 +185,9 @@ def save_slot_customization(user_save_slots):
                     for slot_action in AVAILABLE_SLOT_ACTIONS:
                         print(slot_action)
                     action = input()
-                    
+                      
                 else:
                     break
-
+def load_save_data():
+    pass
 main(inventory, save_data)
