@@ -1,12 +1,10 @@
 import random
-import json
 import os
 import sys
-from time import sleep
-from shutil import copyfile
+import importlib
+import time
+import shutil
 from normal_words_list import words
-sys.path.append("saves")
-from template import save_data, inventory
 original_working_directory = os.getcwd()
 def main(inventory, save_data):
     last_action = "save data"
@@ -33,7 +31,7 @@ def main(inventory, save_data):
         elif action == "fish":
             fishing(inventory, save_data)
         elif action == "save data":
-            save_data_from_session(inventory, save_data)
+            save_data_from_session(inventory, save_data, save_slot)
         elif action == "customize saves":
             save_slot_customization()
         else:
@@ -111,7 +109,7 @@ def fishing(inventory, save_data):
     while True:
         print("You cast your line..")
         catch = random.choice(save_data["available_fish"])
-        sleep(random.randint(3, 5))
+        time.sleep(random.randint(3, 5))
         word_to_type = random.choice(words)
         typed_word = input(f"You feel something pull the line, quick! your word to type is \n{word_to_type} ")
         if typed_word == word_to_type:
@@ -145,15 +143,17 @@ def accessing_shop(inventory, save_data):
         else:
             print("That wasn't a valid action.")
 
-def save_data_from_session(inventory, save_data):
+def save_data_from_session(inventory, save_data, save_slot):
     os.chdir("saves")
-    with open(f"{active_save_slot}_stored_save_data.py", "w") as save_data_store:
-        save_data_store.write(f"inventory = {json.dumps(inventory)}")
-        save_data_store.write(f"\nsave_data = {json.dumps(save_data)}")
-    print("Data stored!")
+    with open(save_slot, "w+") as save_file:
+        save_file.write(f"inventory = {inventory}\nsave_data = {save_data}\n")
+        if "active = True" in save_file.readlines():
+            save_file.write("active = True")
+    print("Successfully saved data.")
 
 def save_slot_customization():
     user_save_slots = []
+    print(os.getcwd())
     for save_slot in os.listdir("saves"):
         if save_slot != "template.py":
             user_save_slots.append(save_slot[: -20])
@@ -170,7 +170,7 @@ def save_slot_customization():
         elif slot_to_customize == "quit":
             break
         else: # Editing / customizing slots
-            AVAILABLE_SLOT_ACTIONS = ["delete", "rename", "make default"]
+            AVAILABLE_SLOT_ACTIONS = ["delete", "rename", "make active"]
             for save_slot_action in AVAILABLE_SLOT_ACTIONS:
                 print(save_slot_action)
             os.chdir("saves")
@@ -193,14 +193,24 @@ def save_slot_customization():
                     else:
                         print("That file already exists.")
                     break
-                elif action == "make default":
-                    confirmation = input('This will make this save file automatically loaded when you run the program. Are you sure? Type "yes" to confirm. ')
+                elif action == "make active":
+                    confirmation = input('This will make this save file loaded when you run the program. If multiple save slots will be active, it will overwrite the preexisting save slots status ')
                     if confirmation == "yes":
-                        with open("test_stored_save_data.py", "r") as file:
-                            save_data = file.readlines()
-                        with open("test_stored_save_data.py", "w") as file:
-                            save_data[3] = "default = True"
-                            file.writelines(save_data)
+                        save_data_contents_without_newline = []
+                        for save_slot in os.listdir():
+                            if not os.path.isdir(save_slot) and save_slot != "template.py":
+                                with open(save_slot, "r") as save_data:
+                                    save_data_contents = save_data.readlines()
+                                    for content in save_data_contents:
+                                        content = content.replace("\n", "")
+                                        save_data_contents_without_newline.append(content)
+                                    if "active = True" in save_data_contents_without_newline:
+                                        save_data_contents_without_newline.remove("active = True")
+                                with open(save_slot, "w") as save_data:
+                                    for content in save_data_contents_without_newline:
+                                        print(content)
+                                        save_data.write(f"{content}\n")
+
                         print("File has been made default.")
                     else:
                         print("Returning.")
@@ -219,10 +229,29 @@ def check_for_valid_save():
     if user_save_slots == []:
         new_save_slot = input("It looks like you don't have any saves. This could be because you messed up or this is your first run. Type a name to create a new save file. ")
         os.chdir("saves")
-        copyfile("template.py", new_save_slot + "_stored_save_data.py")
+        shutil.copyfile("template.py", f"{new_save_slot}_stored_save_data.py")
         os.chdir(original_working_directory)
 
-def load_save_data():
-    pass
+def load_inital_save_data():
+    all_save_data = ""
+    save_data_contents_without_newline = []
+    os.chdir("saves")
+    for save_slot in os.listdir():
+        if not os.path.isdir(save_slot) and save_slot !="template.py":
+            with open(save_slot) as save_data:
+                save_data_contents = save_data.readlines()
+                for content in save_data_contents:
+                    content = content.replace("\n", "")
+                    save_data_contents_without_newline.append(content)
+                if "active = True" in save_data_contents_without_newline:
+                    sys.path.append(os.getcwd())
+                    save_slot = save_slot.replace(".py", "")
+                    all_save_data = importlib.import_module(save_slot)
+    os.chdir(original_working_directory)
+    return all_save_data, save_slot
+
 check_for_valid_save()
+all_save_data, save_slot = load_inital_save_data()
+inventory = all_save_data.inventory
+save_data = all_save_data.save_data
 main(inventory, save_data)
