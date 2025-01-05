@@ -249,7 +249,7 @@ def load_inital_save_data():
                     all_save_data = importlib.import_module(save_slot)
     os.chdir(original_working_directory)
     return all_save_data, save_slot
-#testing
+
 check_for_valid_save()
 all_save_data, save_slot = load_inital_save_data()
 inventory = all_save_data.inventory
