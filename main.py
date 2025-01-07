@@ -145,23 +145,26 @@ def accessing_shop(inventory, save_data):
 
 def save_data_from_session(inventory, save_data, save_slot):
     os.chdir("saves")
-    with open(save_slot, "w+") as save_file:
+    with open(f"{save_slot}.py",) as save_file:
+        contents = save_file.readlines()
+        if "active = True" in contents or "active = True\n" in contents:
+            active = True
+    with open(f"{save_slot}.py", "w") as save_file:
         save_file.write(f"inventory = {inventory}\nsave_data = {save_data}\n")
-        if "active = True" in save_file.readlines():
+        if active:
             save_file.write("active = True")
     print("Successfully saved data.")
 
 def save_slot_customization():
     user_save_slots = []
-    print(os.getcwd())
     for save_slot in os.listdir("saves"):
-        if save_slot != "template.py":
+        if save_slot != "template.py" and not os.path.isdir(save_slot):
             user_save_slots.append(save_slot[: -20])
     while True:
         print("Here is a list of your current saves.")
-        for file in os.listdir("saves"):
-            if file != "template.py":
-                print(file[: -20]) # Prints the word that comes before _stored_save_data.py
+        for save_slot in os.listdir("saves"):
+            if save_slot != "template.py" and not os.path.isdir(save_slot):
+                print(save_slot[: -20]) # Prints the word that comes before _stored_save_data.py
         slot_to_customize = input('''What slot would you like customize? You can type the name of a slot that doesn't exist to create one. or "quit" to exit ''')
         if slot_to_customize not in user_save_slots and slot_to_customize != "quit": # Creates a slot
             os.chdir("saves")
@@ -224,7 +227,7 @@ def save_slot_customization():
 def check_for_valid_save():
     user_save_slots = []
     for save_slot in os.listdir("saves"):
-        if save_slot != "__pycache__" and save_slot != "template.py":
+        if not os.path.isdir(save_slot) and save_slot != "template.py":
             user_save_slots.append(save_slot)
     if user_save_slots == []:
         new_save_slot = input("It looks like you don't have any saves. This could be because you messed up or this is your first run. Type a name to create a new save file. ")
@@ -247,8 +250,8 @@ def load_inital_save_data():
                     sys.path.append(os.getcwd())
                     save_slot = save_slot.replace(".py", "")
                     all_save_data = importlib.import_module(save_slot)
-    os.chdir(original_working_directory)
-    return all_save_data, save_slot
+                    os.chdir(original_working_directory)
+                    return all_save_data, save_slot
 
 check_for_valid_save()
 all_save_data, save_slot = load_inital_save_data()
