@@ -1,15 +1,11 @@
 import random
-import json
 import os
 import sys
-from time import sleep
+import importlib
+import time
+import shutil
 from normal_words_list import words
 original_working_directory = os.getcwd()
-os.chdir("saves")
-sys.path.append(os.getcwd())
-os.chdir(original_working_directory)
-from default_stored_save_data import save_data, inventory, user_save_slots, default_save_attributes
-
 def main(inventory, save_data):
     last_action = "save data"
     while True:
@@ -35,9 +31,9 @@ def main(inventory, save_data):
         elif action == "fish":
             fishing(inventory, save_data)
         elif action == "save data":
-            save_data_from_session(inventory, save_data)
+            save_data_from_session(inventory, save_data, save_slot)
         elif action == "customize saves":
-            save_slot_customization(user_save_slots)
+            save_slot_customization()
         else:
             print("What you entered isn't a valid action, please try again.")
         if action in AVAILABLE_ACTIONS and action != "quit":
@@ -109,11 +105,11 @@ def print_inventory(inventory):
     for item, item_amount in inventory.items():
         print(f"{item} x {item_amount}")
 
-def fishing(inventory, save_data):
+def fishing(inventory, save_data):  
     while True:
         print("You cast your line..")
         catch = random.choice(save_data["available_fish"])
-        sleep(random.randint(3, 5))
+        time.sleep(random.randint(3, 5))
         word_to_type = random.choice(words)
         typed_word = input(f"You feel something pull the line, quick! your word to type is \n{word_to_type} ")
         if typed_word == word_to_type:
@@ -147,47 +143,128 @@ def accessing_shop(inventory, save_data):
         else:
             print("That wasn't a valid action.")
 
-def save_data_from_session(inventory, save_data):
+def save_data_from_session(inventory, save_data, save_slot):
     os.chdir("saves")
-    save_slot = "default"
-    save_data_store = open(f"{save_slot}_stored_save_data.py", "w")
-    save_data_store.write(f"inventory = {json.dumps(inventory)}")
-    save_data_store.write(f"\nsave_data = {json.dumps(save_data)}")
-    save_data_store.write(f"\ndefault_save_attributes = {json.dumps(default_save_attributes)}")
-    save_data_store.write(f"\nuser_save_slots = {json.dumps(user_save_slots)}")
-    print("Data stored!")
+    if "active = True" in file_contents_without_newlines(save_slot):
+        active_slot = True
+    with open(save_slot, "w") as save_file:
+        save_file.write(f"inventory = {inventory}\nsave_data = {save_data}\n")
+        if active_slot:
+            save_file.write("active = True")
+    print("Successfully saved data.")
 
-def save_slot_customization(user_save_slots):
+def save_slot_customization():
+    save_slot_list = []
+    for save_slot in os.listdir("saves"):
+        if save_slot != "template.py" and not os.path.isdir(save_slot):
+            save_slot_list.append(save_slot[: - 20])
     while True:
-        AVAILABLE_SLOT_ACTIONS = ["delete", "rename", "make default"]
         print("Here is a list of your current saves.")
-        user_save_slots.sort()
-        for save in user_save_slots:
-            print(save)
-        slot_to_customize = input('''What slot would you like customize? You can type the name of a slot that doesn't exist to create one. or "quit" to exit''')
-        if slot_to_customize not in user_save_slots and slot_to_customize != "quit":
-            user_save_slots.append(slot_to_customize)
-            new_save_slot = open(f"{slot_to_customize}_stored_save_data.py", "w")
-            new_save_slot.write("new_save = True")
-        elif slot_to_customize == "quit":
+        for save_slot in save_slot_list:
+            print(save_slot)
+        slot_to_customize = input('''What slot would you like customize? You can type the name of a slot that doesn't exist to create one. or "quit" to exit ''')
+        if slot_to_customize not in save_slot_list and slot_to_customize != "quit": # Creates a slot
+            os.chdir("saves")
+            shutil.copyfile("template.py", f"{slot_to_customize}_stored_save_data.py")
+            os.chdir(original_working_directory)
+            save_slot_list.append(slot_to_customize)
+        if slot_to_customize == "quit":
             break
-        else:
+        else: # Editing / customizing slots
+            AVAILABLE_SLOT_ACTIONS = ["delete", "rename", "make active"]
+            for save_slot_action in AVAILABLE_SLOT_ACTIONS:
+                print(save_slot_action)
+            os.chdir("saves")
             while True:
-                print("Here is a list of slots you can edit, which one would you like to edit?")
-                for save in user_save_slots:
-                    print(save)
-                slot_being_edited = input()
-                if slot_being_edited not in user_save_slots:
-                    print("What you entered isn't a slot.")
-                    continue
-                if slot_being_edited != "quit":
-                    print("What would you like to do to the slot? Below is a list of actions.")
-                    for slot_action in AVAILABLE_SLOT_ACTIONS:
-                        print(slot_action)
-                    action = input()
-                      
-                else:
+                action = input(f"What action would you like to do on {slot_to_customize}? ")
+                if action == "delete":
+                    confirmation = input(f'Are you sure you would like to delete {slot_to_customize}? Type "yes" to confirm. ')
+                    if confirmation == "yes":
+                        os.remove(f"{slot_to_customize}_stored_save_data.py")
+                        print(f"The slot {slot_to_customize} has been successfully deleted. ")
+                        break
+                    else:
+                        print("Returning.")
+                elif action == "rename":
+                    new_file_name = input("What would you like to rename the file to? ")
+                    if new_file_name not in save_slot_list:
+                        os.rename(f"{slot_to_customize}_stored_save_data.py", f"{new_file_name}_stored_save_data.py")
+                    else:
+                        print("That file already exists and cannot be renamed.")
                     break
-def load_save_data():
-    pass
+                elif action == "make active":
+                    confirmation = input('This will make this save file loaded when you run the program. If multiple save slots will be active, it will overwrite the preexisting save slots status. Types "yes" to confirm. ')
+                    if confirmation == "yes":
+                        make_save_slot_active()
+                    else:
+                        break
+                elif action == "quit":
+                    break
+                else:
+                    print("That wasn't an action.")
+            os.chdir(original_working_directory)
+
+def load_inital_save_data():
+    all_save_data = ""
+    save_data_contents_without_newline = []
+    os.chdir("saves")
+    for save_slot in os.listdir():
+        if not os.path.isdir(save_slot) and save_slot !="template.py":
+            if "active = True" in file_contents_without_newlines(save_slot):
+                sys.path.append(os.getcwd())
+                save_slot_without_extension = save_slot.replace(".py", "")
+                all_save_data = importlib.import_module(save_slot_without_extension)
+                os.chdir(original_working_directory)
+                return all_save_data, save_slot
+
+def file_contents_without_newlines(save_slot):
+    save_data_contents_without_newline = []
+    with open(save_slot) as save_data:
+        for line in save_data.readlines():
+            line = line.replace("\n", "")
+            save_data_contents_without_newline.append(line)
+        return save_data_contents_without_newline
+
+def make_save_slot_active():
+    for save_slot in os.listdir():
+        if not os.path.isdir(save_slot) and save_slot != "template.py":
+            save_data_contents_without_newline = file_contents_without_newlines(save_slot)
+            if "active = True" in save_data_contents_without_newline:
+                save_data_contents_without_newline.remove("active = True")
+                with open(save_slot, "w") as save_data:
+                    for line in save_data_contents_without_newline:
+                        save_data.write(f"{line}\n")
+    with open(f"{slot_to_customize}_stored_save_data.py", "a") as save_data:
+        save_data.write("active = True")
+    print(f"{slot_to_customize} will be loaded until you make another slot loaded.")
+
+def check_for_valid_save():
+    # This checks for a save slot with "active = True" in the file, and if a file has it the program proceeds as normal
+    # If "active = True" is not in any slot it will create a new slot with "active = True" or edit a slot to append "active = True"
+    os.chdir("saves")
+    for save_slot in os.listdir():
+        if save_slot != "template.py" and not os.path.isdir(save_slot):
+            if "active = True" in file_contents_without_newlines(save_slot):
+                return
+    save_slot_list = []
+    for save_slot in os.listdir():
+        if save_slot != "template.py" and not os.path.isdir(save_slot):
+            save_slot_list.append(save_slot[: -20])
+    for save_slot in save_slot_list:
+        print(save_slot)
+    slot_to_customize = input("It looks like you don't have any active slots, here is a list of your saves, type the name of a save to make it active. You can also type the name of a new save to create a new, valid one. ")
+    if slot_to_customize not in save_slot_list:
+        shutil.copyfile("template.py", f"{slot_to_customize}_stored_save_data.py")
+        with open(f"{slot_to_customize}_stored_save_data.py", "a") as new_save_file:
+            new_save_file.write("active = True")
+    if slot_to_customize in save_slot_list:
+        with open(f"{slot_to_customize}_stored_save_data.py", "a") as save_file:
+            save_file.write("active = True")
+    os.chdir(original_working_directory)
+
+os.chdir(original_working_directory)
+check_for_valid_save()
+all_save_data, save_slot = load_inital_save_data()
+inventory = all_save_data.inventory
+save_data = all_save_data.save_data
 main(inventory, save_data)
