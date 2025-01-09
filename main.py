@@ -245,6 +245,7 @@ def check_for_valid_save():
     for save_slot in os.listdir():
         if save_slot != "template.py" and not os.path.isdir(save_slot):
             if "active = True" in file_contents_without_newlines(save_slot):
+                os.chdir(original_working_directory)
                 return
     save_slot_list = []
     for save_slot in os.listdir():
@@ -262,7 +263,6 @@ def check_for_valid_save():
             save_file.write("active = True")
     os.chdir(original_working_directory)
 
-os.chdir(original_working_directory)
 check_for_valid_save()
 all_save_data, save_slot = load_inital_save_data()
 inventory = all_save_data.inventory
