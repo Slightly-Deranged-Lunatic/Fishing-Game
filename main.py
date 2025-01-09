@@ -238,7 +238,7 @@ def make_save_slot_active():
         save_data.write("active = True")
     print(f"{slot_to_customize} will be loaded until you make another slot loaded.")
 
-def check_for_valid_save(is_a_valid_save = False):
+def check_for_valid_save():
     # This checks for a save slot with "active = True" in the file, and if a file has it the program proceeds as normal
     # If "active = True" is not in any slot it will create a new slot with "active = True" or edit a slot to append "active = True"
     os.chdir("saves")
@@ -246,23 +246,23 @@ def check_for_valid_save(is_a_valid_save = False):
         if save_slot != "template.py" and not os.path.isdir(save_slot):
             if "active = True" in file_contents_without_newlines(save_slot):
                 return
-    if not is_a_valid_save:
-        save_slot_list = []
-        for save_slot in os.listdir():
-            if save_slot != "template.py" and not os.path.isdir(save_slot):
-                save_slot_list.append(save_slot[: -20])
-        for save_slot in save_slot_list:
-            print(save_slot)
-        slot_to_customize = input("It looks like you don't have any active slots, here is a list of your saves, type the name of a save to make it active. You can also type the name of a new save to create a new, valid one. ")
-        if slot_to_customize not in save_slot_list:
-            shutil.copyfile("template.py", f"{slot_to_customize}_stored_save_data.py")
-            with open(f"{slot_to_customize}_stored_save_data.py", "a") as new_save_file:
-                new_save_file.write("active = True")
-        if slot_to_customize in save_slot_list:
-            with open(f"{slot_to_customize}_stored_save_data.py", "a") as save_file:
-                save_file.write("active = True")
+    save_slot_list = []
+    for save_slot in os.listdir():
+        if save_slot != "template.py" and not os.path.isdir(save_slot):
+            save_slot_list.append(save_slot[: -20])
+    for save_slot in save_slot_list:
+        print(save_slot)
+    slot_to_customize = input("It looks like you don't have any active slots, here is a list of your saves, type the name of a save to make it active. You can also type the name of a new save to create a new, valid one. ")
+    if slot_to_customize not in save_slot_list:
+        shutil.copyfile("template.py", f"{slot_to_customize}_stored_save_data.py")
+        with open(f"{slot_to_customize}_stored_save_data.py", "a") as new_save_file:
+            new_save_file.write("active = True")
+    if slot_to_customize in save_slot_list:
+        with open(f"{slot_to_customize}_stored_save_data.py", "a") as save_file:
+            save_file.write("active = True")
     os.chdir(original_working_directory)
 
+os.chdir(original_working_directory)
 check_for_valid_save()
 all_save_data, save_slot = load_inital_save_data()
 inventory = all_save_data.inventory
