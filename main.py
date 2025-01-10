@@ -14,8 +14,7 @@ def main(inventory, save_data):
         if action == "help":
             print(f"Here is a list of available actions")
             AVAILABLE_ACTIONS.sort()
-            for action in AVAILABLE_ACTIONS:
-                print(action)
+            print_each_item_in_list(AVAILABLE_ACTIONS)
         elif action == "quit":
             if last_action != "save data":
                 confirm_exit_without_save = input('You are about to quit without saving, type "yes" to confirm you want to do this and anything else to go back to save. ')
@@ -83,20 +82,20 @@ def buying(inventory, save_data):
         print("Here is what we have today.")
         for item, item_price in SHOP_INVENTORY.items():
             print(f"A {item} for {item_price} coins.")
-        choice_to_buy = input("What would you like to buy? ").lower()
-        if choice_to_buy in SHOP_INVENTORY:
-            if save_data["money"] >= SHOP_INVENTORY.get(choice_to_buy):
+        item_to_buy = input("What would you like to buy? ").lower()
+        if item_to_buy in SHOP_INVENTORY:
+            if save_data["money"] >= SHOP_INVENTORY.get(item_to_buy):
                 user_can_buy = True
             else:
                 print("Sorry you don't have enough money for this.")
                 continue
-            confirmation = input(f'Are you sure you would like to buy a {choice_to_buy} for {SHOP_INVENTORY.get(choice_to_buy)} coins? Type "yes" to confirm your choice. ').lower()
+            confirmation = input(f'Are you sure you would like to buy a {item_to_buy} for {SHOP_INVENTORY.get(item_to_buy)} coins? Type "yes" to confirm your choice. ').lower()
             if confirmation == "yes" and user_can_buy:
-                save_data["money"] = save_data["money"] - SHOP_INVENTORY.get(choice_to_buy)
-                inventory[choice_to_buy] = 1
-                print(f'Thank you for your purchase of a {choice_to_buy}, your current balance is {save_data["money"]} coins.')
+                save_data["money"] = save_data["money"] - SHOP_INVENTORY.get(item_to_buy)
+                inventory[item_to_buy] = 1
+                print(f'Thank you for your purchase of a {item_to_buy}, your current balance is {save_data["money"]} coins.')
                 break
-        elif choice_to_buy == "quit":
+        elif item_to_buy == "quit":
             break
         else:
             print("What you entered isn't an item. Try again.")
@@ -111,7 +110,7 @@ def fishing(inventory, save_data):
         catch = random.choice(save_data["available_fish"])
         time.sleep(random.randint(3, 5))
         word_to_type = random.choice(words)
-        typed_word = input(f"You feel something pull the line, quick! your word to type is \n{word_to_type} ")
+        typed_word = input(f"You feel something pull the line, your word to type is \n{word_to_type} ")
         if typed_word == word_to_type:
             if catch in inventory:
                 inventory[catch] = inventory[catch] + 1
@@ -146,10 +145,10 @@ def accessing_shop(inventory, save_data):
 def save_data_from_session(inventory, save_data, save_slot):
     os.chdir("saves")
     if "active = True" in file_contents_without_newlines(save_slot):
-        active_slot = True
+        active_save = True
     with open(save_slot, "w") as save_file:
         save_file.write(f"inventory = {inventory}\nsave_data = {save_data}\n")
-        if active_slot:
+        if active_save:
             save_file.write("active = True")
     print("Successfully saved data.")
 
@@ -160,38 +159,29 @@ def save_slot_customization():
             save_slot_list.append(save_slot[: - 20])
     while True:
         print("Here is a list of your current saves.")
-        for save_slot in save_slot_list:
-            print(save_slot)
-        slot_to_customize = input('''What slot would you like customize? You can type the name of a slot that doesn't exist to create one. or "quit" to exit ''')
-        if slot_to_customize not in save_slot_list and slot_to_customize != "quit": # Creates a slot
-            os.chdir("saves")
-            shutil.copyfile("template.py", f"{slot_to_customize}_stored_save_data.py")
-            os.chdir(original_working_directory)
-            save_slot_list.append(slot_to_customize)
-        if slot_to_customize == "quit":
+        print_each_item_in_list(save_slot_list)
+        save_slot_to_customize = input('''What slot would you like customize? You can type the name of a slot that doesn't exist to create one, or "quit" to exit ''')
+        if save_slot_to_customize not in save_slot_list and save_slot_to_customize != "quit": 
+            create_save_slot(save_slot_to_customize)
+            save_slot_list.append(save_slot_to_customize)
+        if save_slot_to_customize == "quit":
             break
         else: # Editing / customizing slots
             AVAILABLE_SLOT_ACTIONS = ["delete", "rename", "make active"]
-            for save_slot_action in AVAILABLE_SLOT_ACTIONS:
-                print(save_slot_action)
+            print_each_item_in_list(AVAILABLE_SLOT_ACTIONS)
             os.chdir("saves")
             while True:
-                action = input(f"What action would you like to do on {slot_to_customize}? ")
+                action = input(f"What action would you like to do on {save_slot_to_customize}? ")
                 if action == "delete":
-                    confirmation = input(f'Are you sure you would like to delete {slot_to_customize}? Type "yes" to confirm. ')
+                    confirmation = input(f'Are you sure you would like to delete {save_slot_to_customize}? Type "yes" to confirm. ')
                     if confirmation == "yes":
-                        os.remove(f"{slot_to_customize}_stored_save_data.py")
-                        print(f"The slot {slot_to_customize} has been successfully deleted. ")
+                        os.remove(f"{save_slot_to_customize}_stored_save_data.py")
+                        print(f"The slot {save_slot_to_customize} has been successfully deleted. ")
                         break
                     else:
                         print("Returning.")
                 elif action == "rename":
-                    new_file_name = input("What would you like to rename the file to? ")
-                    if new_file_name not in save_slot_list:
-                        os.rename(f"{slot_to_customize}_stored_save_data.py", f"{new_file_name}_stored_save_data.py")
-                    else:
-                        print("That file already exists and cannot be renamed.")
-                    break
+                    rename_save_slot(save_slot_list, save_slot_to_customize)
                 elif action == "make active":
                     confirmation = input('This will make this save file loaded when you run the program. If multiple save slots will be active, it will overwrite the preexisting save slots status. Types "yes" to confirm. ')
                     if confirmation == "yes":
@@ -234,9 +224,9 @@ def make_save_slot_active():
                 with open(save_slot, "w") as save_data:
                     for line in save_data_contents_without_newline:
                         save_data.write(f"{line}\n")
-    with open(f"{slot_to_customize}_stored_save_data.py", "a") as save_data:
+    with open(f"{save_slot_to_customize}_stored_save_data.py", "a") as save_data:
         save_data.write("active = True")
-    print(f"{slot_to_customize} will be loaded until you make another slot loaded.")
+    print(f"{save_slot_to_customize} will be loaded until you make another slot loaded.")
 
 def check_for_valid_save():
     # This checks for a save slot with "active = True" in the file, and if a file has it the program proceeds as normal
@@ -253,15 +243,38 @@ def check_for_valid_save():
             save_slot_list.append(save_slot[: -20])
     for save_slot in save_slot_list:
         print(save_slot)
-    slot_to_customize = input("It looks like you don't have any active slots, here is a list of your saves, type the name of a save to make it active. You can also type the name of a new save to create a new, valid one. ")
-    if slot_to_customize not in save_slot_list:
-        shutil.copyfile("template.py", f"{slot_to_customize}_stored_save_data.py")
-        with open(f"{slot_to_customize}_stored_save_data.py", "a") as new_save_file:
-            new_save_file.write("active = True")
-    if slot_to_customize in save_slot_list:
-        with open(f"{slot_to_customize}_stored_save_data.py", "a") as save_file:
+    save_slot = input("It looks like you don't have any active slots, here is a list of your saves, type the name of a save to make it active. You can also type the name of a new save to create a new, valid one. ")
+    if save_slot not in save_slot_list:
+        create_save_slot(active_save = True)
+    if save_slot in save_slot_list:
+        with open(f"{save_slot}_stored_save_data.py", "a") as save_file:
             save_file.write("active = True")
     os.chdir(original_working_directory)
+
+def create_save_slot(active_save = False):
+    os.chdir("saves")
+    shutil.copyfile("template.py", f"{new_save_slot}_stored_save_data.py")
+    os.chdir(original_working_directory)
+    if active_save:
+        with open(f"{new_save_slot}_stored_save_data.py", "a") as save_file:
+            save_file.write("active = True")
+
+def rename_save_slot(save_slot_list, save_slot_to_customize):
+    new_file_name = input(f"What would you like to rename the save slot {save_slot_to_customize} to? ")
+    while True:
+        if new_file_name == "quit":
+            print("Returning.")
+            return
+        elif new_file_name not in save_slot_list:
+            os.rename(f"{save_slot_to_customize}_stored_save_data.py", f"{new_slot_name}_stored_save_data.py")
+            print(f"Successfully renamed {save_slot_to_customize} to {new_slot_name}.")
+            return
+        else:
+            print(f"There is already a save slot with the name {new_save_slot_name}.")
+
+def print_each_item_in_list(defined_list):
+    for item in defined_list:
+        print(item)
 
 check_for_valid_save()
 all_save_data, save_slot = load_inital_save_data()
