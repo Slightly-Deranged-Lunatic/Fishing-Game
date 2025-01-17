@@ -5,11 +5,11 @@ import importlib
 import time
 import shutil
 from normal_words_list import words
-original_working_directory = os.getcwd()
+ORIGINAL_WORKING_DIRECTORY = os.getcwd()
 def main(inventory, save_data):
     last_action = "save data"
     while True:
-        AVAILABLE_ACTIONS = ["help", "fish", "shop", "quit", "view wallet", "view inventory", "save data", "customize saves",]
+        AVAILABLE_ACTIONS = ["help", "fish", "shop", "quit", "view wallet", "view inventory", "save data", "customize saves", "configure settings",]
         action = input('What would you like to do? Type "help" for a list of actions, and as a reminder, you can type "quit" at any time to go back to the previous menu. ').lower()
         if action == "help":
             print(f"Here is a list of available actions")
@@ -73,25 +73,29 @@ def selling(inventory, save_data):
             print("Sorry what you entered isn't an action, please try again")
 
 def buying(inventory, save_data):
-    SHOP_INVENTORY = {
-        "iron fishing rod" : 50,
-        "spooky fishing rod" : 100,
-        "horrifying fishing rod" : 500
-        }
     while True:
+        DEFAULT_SHOP_INVENTORY = {
+            "iron fishing rod" : 50,
+            "spooky fishing rod" : 100,
+            "horrifying fishing rod" : 500
+            }
+        shop_inventory = DEFAULT_SHOP_INVENTORY
+        for item in list(DEFAULT_SHOP_INVENTORY.keys()):
+            if item in inventory.keys():
+                shop_inventory.pop(item)
         print("Here is what we have today.")
-        for item, item_price in SHOP_INVENTORY.items():
+        for item, item_price in shop_inventory.items():
             print(f"A {item} for {item_price} coins.")
         item_to_buy = input("What would you like to buy? ").lower()
-        if item_to_buy in SHOP_INVENTORY:
-            if save_data["money"] >= SHOP_INVENTORY.get(item_to_buy):
+        if item_to_buy in shop_inventory:
+            if save_data["money"] >= shop_inventory.get(item_to_buy):
                 user_can_buy = True
             else:
                 print("Sorry you don't have enough money for this.")
                 continue
-            confirmation = input(f'Are you sure you would like to buy a {item_to_buy} for {SHOP_INVENTORY.get(item_to_buy)} coins? Type "yes" to confirm your choice. ').lower()
+            confirmation = input(f'Are you sure you would like to buy a {item_to_buy} for {shop_inventory.get(item_to_buy)} coins? Type "yes" to confirm your choice. ').lower()
             if confirmation == "yes" and user_can_buy:
-                save_data["money"] = save_data["money"] - SHOP_INVENTORY.get(item_to_buy)
+                save_data["money"] = save_data["money"] - shop_inventory.get(item_to_buy)
                 inventory[item_to_buy] = 1
                 print(f'Thank you for your purchase of a {item_to_buy}, your current balance is {save_data["money"]} coins.')
                 break
@@ -192,7 +196,7 @@ def save_slot_customization():
                     break
                 else:
                     print("That wasn't an action.")
-            os.chdir(original_working_directory)
+            os.chdir(ORIGINAL_WORKING_DIRECTORY)
 
 def load_inital_save_data():
     all_save_data = ""
@@ -204,7 +208,7 @@ def load_inital_save_data():
                 sys.path.append(os.getcwd())
                 save_slot_without_extension = save_slot.replace(".py", "")
                 all_save_data = importlib.import_module(save_slot_without_extension)
-                os.chdir(original_working_directory)
+                os.chdir(ORIGINAL_WORKING_DIRECTORY)
                 return all_save_data, save_slot
 
 def file_contents_without_newlines(save_slot):
@@ -235,7 +239,7 @@ def check_for_valid_save():
     for save_slot in os.listdir():
         if save_slot != "template.py" and not os.path.isdir(save_slot):
             if "active = True" in file_contents_without_newlines(save_slot):
-                os.chdir(original_working_directory)
+                os.chdir(ORIGINAL_WORKING_DIRECTORY)
                 return
     save_slot_list = []
     for save_slot in os.listdir():
@@ -245,16 +249,16 @@ def check_for_valid_save():
         print(save_slot)
     save_slot = input("It looks like you don't have any active slots, here is a list of your saves, type the name of a save to make it active. You can also type the name of a new save to create a new, valid one. ")
     if save_slot not in save_slot_list:
-        create_save_slot(active_save = True)
+        os.chdir(ORIGINAL_WORKING_DIRECTORY)
+        create_save_slot(save_slot, active_save = True)
     if save_slot in save_slot_list:
         with open(f"{save_slot}_stored_save_data.py", "a") as save_file:
             save_file.write("active = True")
-    os.chdir(original_working_directory)
+    os.chdir(ORIGINAL_WORKING_DIRECTORY)
 
-def create_save_slot(active_save = False):
+def create_save_slot(new_save_slot, active_save = False):
     os.chdir("saves")
     shutil.copyfile("template.py", f"{new_save_slot}_stored_save_data.py")
-    os.chdir(original_working_directory)
     if active_save:
         with open(f"{new_save_slot}_stored_save_data.py", "a") as save_file:
             save_file.write("active = True")
@@ -276,6 +280,21 @@ def print_each_item_in_list(defined_list):
     for item in defined_list:
         print(item)
 
+def configure_difficulty():
+    DIFFICULTY_OPTIONS = ["easy", "medium", "hard"]
+    new_difficulty = input("What would you like to change your difficulty to? It is currently {difficulty}. ")
+    print_each_item_in_list(DIFFICULTY_OPTIONS)
+
+def configure_settings():
+    CONFIGURATION_CHOICES = ["difficulty",]
+    while True:
+        configuration_choice = input("What would you like to configure? ")
+        print_each_item_in_list(CONFIGURATION_CHOICES)
+        if configuration_choice in CONFIGURATION_CHOICES:
+            if configuration_choice == "difficulty":
+                configure_difficulty()
+        else:
+            print("That wasn't a valid configuration option")
 check_for_valid_save()
 all_save_data, save_slot = load_inital_save_data()
 inventory = all_save_data.inventory
