@@ -6,7 +6,7 @@ import time
 import shutil
 from normal_words_list import words
 ORIGINAL_WORKING_DIRECTORY = os.getcwd()
-def main(inventory, save_data):
+def main(inventory, money, available_fish, save_slot):
     last_action = "save data"
     while True:
         AVAILABLE_ACTIONS = ["help", "fish", "shop", "quit", "view wallet", "view inventory", "save data", "customize saves", "configure settings",]
@@ -38,7 +38,7 @@ def main(inventory, save_data):
         if action in AVAILABLE_ACTIONS and action != "quit":
             last_action = action
 
-def selling(inventory, save_data):
+def selling(inventory, money):
     SELL_VALUES = {
         "salmon" : 2,
         "carp" : 1,
@@ -72,7 +72,7 @@ def selling(inventory, save_data):
         else:
             print("Sorry what you entered isn't an action, please try again")
 
-def buying(inventory, save_data):
+def buying(inventory, money):
     while True:
         DEFAULT_SHOP_INVENTORY = {
             "iron fishing rod" : 50,
@@ -108,10 +108,10 @@ def print_inventory(inventory):
     for item, item_amount in inventory.items():
         print(f"{item} x {item_amount}")
 
-def fishing(inventory, save_data):  
+def fishing(inventory, available_fish):  
     while True:
         print("You cast your line..")
-        catch = random.choice(save_data["available_fish"])
+        catch = random.choice(available_fish)
         time.sleep(random.randint(3, 5))
         word_to_type = random.choice(words)
         typed_word = input(f"You feel something pull the line, your word to type is \n{word_to_type} ")
@@ -134,23 +134,25 @@ def fishing(inventory, save_data):
         else:
             print(f"The {catch} got away.")
 
-def accessing_shop(inventory, save_data):
+def accessing_shop(inventory, money):
     while True:
         buy_or_sell = input("Would you like to buy or sell today? ").lower()
         if buy_or_sell == "buy":
-            buying(inventory, save_data)
+            buying(inventory, money)
         elif buy_or_sell == "sell":
-            selling(inventory, save_data)
+            selling(inventory, money)
         elif buy_or_sell == "quit":
             break
         else:
             print("That wasn't a valid action.")
 
-def save_data_from_session(inventory, save_data, save_slot):
+def save_data_from_session(inventory, money, save_slot):
     os.chdir("saves")
-    with open(save_slot, "w") as save_file:
-        save_file.write(f"inventory = {inventory}\nsave_data.money = {money}\n")
-        if "active = True" in file_contents_without_newlines(save_slot):
+    if "active = True" in file_contents_without_newlines(save_slot):
+        active_save_slot = True
+    with open(save_slot, "w+") as save_file:
+        save_file.write(f"inventory = {inventory}\nmoney = {money}\n")
+        if active_save_slot:
             save_file.write("active = True")
     print("Successfully saved data.")
 
@@ -158,7 +160,7 @@ def save_slot_customization():
     save_slot_list = []
     for save_slot in os.listdir("saves"):
         if save_slot != "template.py" and not os.path.isdir(save_slot):
-            save_slot_list.append(save_slot[: - 20])
+            save_slot_list.append(save_slot[: - 13])
     while True:
         print("Here is a list of your current saves.")
         print_each_item_in_list(save_slot_list)
@@ -197,7 +199,7 @@ def save_slot_customization():
             os.chdir(ORIGINAL_WORKING_DIRECTORY)
 
 def load_inital_save_data():
-    save_data = ""
+    all_save_data = ""
     save_data_contents_without_newline = []
     os.chdir("saves")
     for save_slot in os.listdir():
@@ -205,9 +207,9 @@ def load_inital_save_data():
             if "active = True" in file_contents_without_newlines(save_slot):
                 sys.path.append(os.getcwd())
                 save_slot_without_extension = save_slot.replace(".py", "")
-                save_data = importlib.import_module(save_slot_without_extension)
+                all_save_data = importlib.import_module(save_slot_without_extension)
                 os.chdir(ORIGINAL_WORKING_DIRECTORY)
-                return save_data, save_slot
+                return all_save_data, save_slot
 
 def file_contents_without_newlines(save_slot):
     save_data_contents_without_newline = []
@@ -242,7 +244,7 @@ def check_for_valid_save():
     save_slot_list = []
     for save_slot in os.listdir():
         if save_slot != "template.py" and not os.path.isdir(save_slot):
-            save_slot_list.append(save_slot[: -20])
+            save_slot_list.append(save_slot[: - 13])
     for save_slot in save_slot_list:
         print(save_slot)
     save_slot = input("It looks like you don't have any active slots, here is a list of your saves, type the name of a save to make it active. You can also type the name of a new save to create a new, valid one. ")
@@ -297,4 +299,4 @@ def configure_settings():
 
 check_for_valid_save()
 save_data, save_slot = load_inital_save_data()
-main(inventory, save_data)
+main(save_data.inventory, save_data.money, save_data.available_fish, save_slot)
