@@ -22,15 +22,15 @@ def main(inventory, save_data):
                 print("Sad to see you go! Goodbye!")
                 raise SystemExit()
         elif action == "view wallet":
-            print(save_data["money"])
+            print(money)
         elif action == "view inventory":
             print_inventory(inventory)
         elif action == "shop":
-            accessing_shop(inventory, save_data)
+            accessing_shop(inventory, money)
         elif action == "fish":
-            fishing(inventory, save_data)
+            fishing(inventory, money)
         elif action == "save data":
-            save_data_from_session(inventory, save_data, save_slot)
+            save_data_from_session(inventory, money, save_slot)
         elif action == "customize saves":
             save_slot_customization()
         else:
@@ -53,7 +53,7 @@ def selling(inventory, save_data):
             for item, amount in list(inventory.items()):
                 if item in SELL_VALUES:
                     for count in range(amount):
-                        save_data["money"] = save_data["money"] + SELL_VALUES.get(item)
+                        money = money + SELL_VALUES.get(item)
                     del inventory[item]
             print("Transaction completed.")
             break
@@ -62,7 +62,7 @@ def selling(inventory, save_data):
                 for count in range(amount):
                     while count < amount - 1:
                         if item in SELL_VALUES:
-                            save_data["money"] = save_data["money"] + SELL_VALUES.get(item)
+                            money = money + SELL_VALUES.get(item)
                         break
                     inventory[item] = 1
             print("Transaction completed.")
@@ -88,16 +88,16 @@ def buying(inventory, save_data):
             print(f"A {item} for {item_price} coins.")
         item_to_buy = input("What would you like to buy? ").lower()
         if item_to_buy in shop_inventory:
-            if save_data["money"] >= shop_inventory.get(item_to_buy):
+            if money >= shop_inventory.get(item_to_buy):
                 user_can_buy = True
             else:
                 print("Sorry you don't have enough money for this.")
                 continue
             confirmation = input(f'Are you sure you would like to buy a {item_to_buy} for {shop_inventory.get(item_to_buy)} coins? Type "yes" to confirm your choice. ').lower()
             if confirmation == "yes" and user_can_buy:
-                save_data["money"] = save_data["money"] - shop_inventory.get(item_to_buy)
+                money = money - shop_inventory.get(item_to_buy)
                 inventory[item_to_buy] = 1
-                print(f'Thank you for your purchase of a {item_to_buy}, your current balance is {save_data["money"]} coins.')
+                print(f'Thank you for your purchase of a {item_to_buy}, your current balance is {money} coins.')
                 break
         elif item_to_buy == "quit":
             break
@@ -148,11 +148,9 @@ def accessing_shop(inventory, save_data):
 
 def save_data_from_session(inventory, save_data, save_slot):
     os.chdir("saves")
-    if "active = True" in file_contents_without_newlines(save_slot):
-        active_save = True
     with open(save_slot, "w") as save_file:
-        save_file.write(f"inventory = {inventory}\nsave_data = {save_data}\n")
-        if active_save:
+        save_file.write(f"inventory = {inventory}\nsave_data.money = {money}\n")
+        if "active = True" in file_contents_without_newlines(save_slot):
             save_file.write("active = True")
     print("Successfully saved data.")
 
@@ -179,7 +177,7 @@ def save_slot_customization():
                 if action == "delete":
                     confirmation = input(f'Are you sure you would like to delete {save_slot_to_customize}? Type "yes" to confirm. ')
                     if confirmation == "yes":
-                        os.remove(f"{save_slot_to_customize}_stored_save_data.py")
+                        os.remove(f"{save_slot_to_customize}_save_data.py")
                         print(f"The slot {save_slot_to_customize} has been successfully deleted. ")
                         break
                     else:
@@ -199,7 +197,7 @@ def save_slot_customization():
             os.chdir(ORIGINAL_WORKING_DIRECTORY)
 
 def load_inital_save_data():
-    all_save_data = ""
+    save_data = ""
     save_data_contents_without_newline = []
     os.chdir("saves")
     for save_slot in os.listdir():
@@ -207,9 +205,9 @@ def load_inital_save_data():
             if "active = True" in file_contents_without_newlines(save_slot):
                 sys.path.append(os.getcwd())
                 save_slot_without_extension = save_slot.replace(".py", "")
-                all_save_data = importlib.import_module(save_slot_without_extension)
+                save_data = importlib.import_module(save_slot_without_extension)
                 os.chdir(ORIGINAL_WORKING_DIRECTORY)
-                return all_save_data, save_slot
+                return save_data, save_slot
 
 def file_contents_without_newlines(save_slot):
     save_data_contents_without_newline = []
@@ -228,7 +226,7 @@ def make_save_slot_active():
                 with open(save_slot, "w") as save_data:
                     for line in save_data_contents_without_newline:
                         save_data.write(f"{line}\n")
-    with open(f"{save_slot_to_customize}_stored_save_data.py", "a") as save_data:
+    with open(f"{save_slot_to_customize}_save_data.py", "a") as save_data:
         save_data.write("active = True")
     print(f"{save_slot_to_customize} will be loaded until you make another slot loaded.")
 
@@ -252,16 +250,17 @@ def check_for_valid_save():
         os.chdir(ORIGINAL_WORKING_DIRECTORY)
         create_save_slot(save_slot, active_save = True)
     if save_slot in save_slot_list:
-        with open(f"{save_slot}_stored_save_data.py", "a") as save_file:
+        with open(f"{save_slot}_save_data.py", "a") as save_file:
             save_file.write("active = True")
     os.chdir(ORIGINAL_WORKING_DIRECTORY)
 
 def create_save_slot(new_save_slot, active_save = False):
     os.chdir("saves")
-    shutil.copyfile("template.py", f"{new_save_slot}_stored_save_data.py")
+    shutil.copyfile("template.py", f"{new_save_slot}_save_data.py")
     if active_save:
-        with open(f"{new_save_slot}_stored_save_data.py", "a") as save_file:
+        with open(f"{new_save_slot}_save_data.py", "a") as save_file:
             save_file.write("active = True")
+    os.chdir(ORIGINAL_WORKING_DIRECTORY)
 
 def rename_save_slot(save_slot_list, save_slot_to_customize):
     new_file_name = input(f"What would you like to rename the save slot {save_slot_to_customize} to? ")
@@ -270,7 +269,7 @@ def rename_save_slot(save_slot_list, save_slot_to_customize):
             print("Returning.")
             return
         elif new_file_name not in save_slot_list:
-            os.rename(f"{save_slot_to_customize}_stored_save_data.py", f"{new_slot_name}_stored_save_data.py")
+            os.rename(f"{save_slot_to_customize}_save_data.py", f"{new_slot_name}_save_data.py")
             print(f"Successfully renamed {save_slot_to_customize} to {new_slot_name}.")
             return
         else:
@@ -295,8 +294,7 @@ def configure_settings():
                 configure_difficulty()
         else:
             print("That wasn't a valid configuration option")
+
 check_for_valid_save()
-all_save_data, save_slot = load_inital_save_data()
-inventory = all_save_data.inventory
-save_data = all_save_data.save_data
+save_data, save_slot = load_inital_save_data()
 main(inventory, save_data)
