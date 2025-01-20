@@ -4,16 +4,15 @@ import sys
 import importlib
 import time
 import shutil
-from normal_words_list import words
 ORIGINAL_WORKING_DIRECTORY = os.getcwd()
-def main(inventory, money, available_fish, save_slot):
+def main(inventory, money, available_fish, difficulty, save_slot):
     last_action = "save data"
     while True:
-        AVAILABLE_ACTIONS = ["help", "fish", "shop", "quit", "view wallet", "view inventory", "save data", "customize saves", "configure settings",]
+        print(difficulty)
+        AVAILABLE_ACTIONS = ["help", "fish", "shop", "quit", "view wallet", "view inventory", "save data", "configure saves", "configure settings",]
         action = input('What would you like to do? Type "help" for a list of actions, and as a reminder, you can type "quit" at any time to go back to the previous menu. ').lower()
         if action == "help":
             print(f"Here is a list of available actions")
-            AVAILABLE_ACTIONS.sort()
             print_each_item_in_list(AVAILABLE_ACTIONS)
         elif action == "quit":
             if last_action != "save data":
@@ -28,11 +27,13 @@ def main(inventory, money, available_fish, save_slot):
         elif action == "shop":
             accessing_shop(inventory, money)
         elif action == "fish":
-            fishing(inventory, money)
+            fishing(inventory, available_fish, difficulty)
         elif action == "save data":
-            save_data_from_session(inventory, money, save_slot)
-        elif action == "customize saves":
-            save_slot_customization()
+            save_data_from_session(inventory, money, available_fish, difficulty, save_slot)
+        elif action == "configure saves":
+            save_slot_configuration()
+        elif action == "configure settings":
+            configure_settings(difficulty)
         else:
             print("What you entered isn't a valid action, please try again.")
         if action in AVAILABLE_ACTIONS and action != "quit":
@@ -108,12 +109,14 @@ def print_inventory(inventory):
     for item, item_amount in inventory.items():
         print(f"{item} x {item_amount}")
 
-def fishing(inventory, available_fish):  
+def fishing(inventory, available_fish, difficulty):  
+    words = f"{difficulty}_words_list"
+    words_list = importlib.import_module(words)
     while True:
         print("You cast your line..")
         catch = random.choice(available_fish)
         time.sleep(random.randint(3, 5))
-        word_to_type = random.choice(words)
+        word_to_type = random.choice(words_list.words)
         typed_word = input(f"You feel something pull the line, your word to type is \n{word_to_type} ")
         if typed_word == word_to_type:
             if catch in inventory:
@@ -146,17 +149,17 @@ def accessing_shop(inventory, money):
         else:
             print("That wasn't a valid action.")
 
-def save_data_from_session(inventory, money, save_slot):
+def save_data_from_session(inventory, money, available_fish, difficulty, save_slot):
     os.chdir("saves")
     if "active = True" in file_contents_without_newlines(save_slot):
         active_save_slot = True
-    with open(save_slot, "w+") as save_file:
-        save_file.write(f"inventory = {inventory}\nmoney = {money}\n")
+    with open(save_slot, "w") as save_file:
+        save_file.write(f'inventory = {inventory}\nmoney = {money}\navailable_fish = {available_fish}\ndifficulty = "{difficulty}"\n')
         if active_save_slot:
             save_file.write("active = True")
     print("Successfully saved data.")
 
-def save_slot_customization():
+def save_slot_configuration():
     save_slot_list = []
     for save_slot in os.listdir("saves"):
         if save_slot != "template.py" and not os.path.isdir(save_slot):
@@ -199,7 +202,7 @@ def save_slot_customization():
             os.chdir(ORIGINAL_WORKING_DIRECTORY)
 
 def load_inital_save_data():
-    all_save_data = ""
+    save_data = ""
     save_data_contents_without_newline = []
     os.chdir("saves")
     for save_slot in os.listdir():
@@ -207,9 +210,9 @@ def load_inital_save_data():
             if "active = True" in file_contents_without_newlines(save_slot):
                 sys.path.append(os.getcwd())
                 save_slot_without_extension = save_slot.replace(".py", "")
-                all_save_data = importlib.import_module(save_slot_without_extension)
+                save_data = importlib.import_module(save_slot_without_extension)
                 os.chdir(ORIGINAL_WORKING_DIRECTORY)
-                return all_save_data, save_slot
+                return save_data, save_slot
 
 def file_contents_without_newlines(save_slot):
     save_data_contents_without_newline = []
@@ -220,6 +223,7 @@ def file_contents_without_newlines(save_slot):
         return save_data_contents_without_newline
 
 def make_save_slot_active():
+    # This will make one save slot active while also making another inactive if it is active.
     for save_slot in os.listdir():
         if not os.path.isdir(save_slot) and save_slot != "template.py":
             save_data_contents_without_newline = file_contents_without_newlines(save_slot)
@@ -281,22 +285,34 @@ def print_each_item_in_list(defined_list):
     for item in defined_list:
         print(item)
 
-def configure_difficulty():
-    DIFFICULTY_OPTIONS = ["easy", "medium", "hard"]
-    new_difficulty = input("What would you like to change your difficulty to? It is currently {difficulty}. ")
+def configure_difficulty(difficulty):
+    DIFFICULTY_OPTIONS = ["easy", "normal", "hard"]
     print_each_item_in_list(DIFFICULTY_OPTIONS)
+    while True:
+        new_difficulty = input(f"What would you like to change your difficulty to? It is currently {difficulty}. ").lower()
+        if new_difficulty in DIFFICULTY_OPTIONS:
+            print(f"Your difficulty has been changed to {new_difficulty}.")
+            return new_difficulty
+            break
+        if new_difficulty == "quit":
+            break
+        else:
+            print("That wasn't a difficulty option.")
+            continue
 
-def configure_settings():
+def configure_settings(difficulty):
     CONFIGURATION_CHOICES = ["difficulty",]
     while True:
-        configuration_choice = input("What would you like to configure? ")
         print_each_item_in_list(CONFIGURATION_CHOICES)
+        configuration_choice = input("What would you like to configure? ").lower()
         if configuration_choice in CONFIGURATION_CHOICES:
             if configuration_choice == "difficulty":
-                configure_difficulty()
+                difficulty = configure_difficulty(difficulty)
+        elif configuration_choice == "quit":
+            break
         else:
             print("That wasn't a valid configuration option")
 
 check_for_valid_save()
 save_data, save_slot = load_inital_save_data()
-main(save_data.inventory, save_data.money, save_data.available_fish, save_slot)
+main(save_data.inventory, save_data.money, save_data.available_fish, save_data.difficulty, save_slot)
