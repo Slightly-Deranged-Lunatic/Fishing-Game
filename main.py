@@ -9,7 +9,7 @@ def main(inventory, money, available_fish, difficulty, save_slot):
     last_action = "save data"
     while True:
         print(difficulty)
-        AVAILABLE_ACTIONS = ["help", "fish", "shop", "quit", "view wallet", "view inventory", "save data", "configure saves", "configure settings",]
+        AVAILABLE_ACTIONS = ["help", "fish", "shop", "quit", "view wallet", "view inventory", "save data", "configure saves", "configure difficulty",]
         action = input('What would you like to do? Type "help" for a list of actions, and as a reminder, you can type "quit" at any time to go back to the previous menu. ').lower()
         if action == "help":
             print(f"Here is a list of available actions")
@@ -32,8 +32,8 @@ def main(inventory, money, available_fish, difficulty, save_slot):
             save_data_from_session(inventory, money, available_fish, difficulty, save_slot)
         elif action == "configure saves":
             save_slot_configuration()
-        elif action == "configure settings":
-            configure_settings(difficulty)
+        elif action == "configure difficulty":
+            difficulty = configure_difficulty(difficulty)
         else:
             print("What you entered isn't a valid action, please try again.")
         if action in AVAILABLE_ACTIONS and action != "quit":
@@ -299,19 +299,6 @@ def configure_difficulty(difficulty):
         else:
             print("That wasn't a difficulty option.")
             continue
-
-def configure_settings(difficulty):
-    CONFIGURATION_CHOICES = ["difficulty",]
-    while True:
-        print_each_item_in_list(CONFIGURATION_CHOICES)
-        configuration_choice = input("What would you like to configure? ").lower()
-        if configuration_choice in CONFIGURATION_CHOICES:
-            if configuration_choice == "difficulty":
-                difficulty = configure_difficulty(difficulty)
-        elif configuration_choice == "quit":
-            break
-        else:
-            print("That wasn't a valid configuration option")
 
 check_for_valid_save()
 save_data, save_slot = load_inital_save_data()
