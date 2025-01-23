@@ -223,15 +223,16 @@ def create_save_slot(new_save_slot, active_save = False):
     os.chdir(ORIGINAL_WORKING_DIRECTORY)
 
 def rename_save_slot(save_slot_list, save_slot_to_customize):
-    new_file_name = input(f"What would you like to rename the save slot {save_slot_to_customize} to? ")
     while True:
-        if new_file_name == "quit":
-            print("Returning.")
-            return
-        elif new_file_name not in save_slot_list:
+        new_save_slot_name = input(f"What would you like to rename the save slot {save_slot_to_customize} to? ")
+        if new_save_slot_name == "template":
+            print("You cannot name a save file that.")
+        elif new_save_slot_name == "quit":
+            break
+        elif new_save_slot_name not in save_slot_list:
             os.rename(f"{save_slot_to_customize}_save_data.py", f"{new_slot_name}_save_data.py")
             print(f"Successfully renamed {save_slot_to_customize} to {new_slot_name}.")
-            return
+            break
         else:
             print(f"There is already a save slot with the name {new_save_slot_name}.")
 
@@ -253,7 +254,12 @@ def save_slot_configuration():
     while True:
         print("Here is a list of your current saves.")
         print_each_item_in_list(save_slot_list)
-        save_slot_to_customize = input('''What slot would you like customize? You can type the name of a slot that doesn't exist to create one, or "quit" to exit ''')
+        while True:
+            save_slot_to_customize = input('''What slot would you like customize? You can type the name of a slot that doesn't exist to create one, or "quit" to exit ''')
+            if save_slot_to_customize != "template":
+                break
+            else:
+                print("You cannot name a save slot that.")
         if save_slot_to_customize not in save_slot_list and save_slot_to_customize != "quit": 
             create_save_slot(save_slot_to_customize)
             save_slot_list.append(save_slot_to_customize)
