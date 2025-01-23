@@ -1,1 +1,2 @@
-Code backup and sharing for my fishing game built in python.
+A fishing game built by a beginner in Python as a passion project.
+This repo is currently not accepting pull requests, sorry!

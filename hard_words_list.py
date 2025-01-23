@@ -1,3 +1,6 @@
+# Credits to Monkeytype for the words list https://github.com/monkeytypegame/monkeytype/tree/master/frontend/static/languages
+# This one is english 5k
+
 words = [
     "a",
     "abandon",
