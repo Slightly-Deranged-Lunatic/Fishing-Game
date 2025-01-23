@@ -31,7 +31,7 @@ def main(inventory, money, available_fish, difficulty, save_slot):
         elif action == "save data":
             save_data_from_session(inventory, money, available_fish, difficulty, save_slot)
         elif action == "configure saves":
-            save_slot_configuration()
+            save_slot_configuration(save_slot)
         elif action == "configure difficulty":
             difficulty = configure_difficulty(difficulty)
         else:
@@ -176,7 +176,7 @@ def configure_difficulty(difficulty):
             print("That wasn't a difficulty option.")
             continue
 
-def make_save_slot_active():
+def make_save_slot_active(target_save_slot):
     # This will make one save slot active while also making another inactive if it is active.
     for save_slot in os.listdir():
         if not os.path.isdir(save_slot) and save_slot != "template.py":
@@ -186,9 +186,9 @@ def make_save_slot_active():
                 with open(save_slot, "w") as save_data:
                     for line in save_data_contents_without_newline:
                         save_data.write(f"{line}\n")
-    with open(f"{save_slot_to_customize}_save_data.py", "a") as save_data:
+    with open(f"{target_save_slot}_save_data.py", "a") as save_data:
         save_data.write("active = True")
-    print(f"{save_slot_to_customize} will be loaded until you make another slot loaded.")
+    print(f"{target_save_slot} will be loaded until you make another slot loaded.")
 
 def check_for_valid_save():
     # This checks for a save slot with "active = True" in the file, and if a file has it the program proceeds as normal
@@ -230,9 +230,9 @@ def rename_save_slot(save_slot_list, save_slot_to_customize):
         elif new_save_slot_name == "quit":
             break
         elif new_save_slot_name not in save_slot_list:
-            os.rename(f"{save_slot_to_customize}_save_data.py", f"{new_slot_name}_save_data.py")
-            print(f"Successfully renamed {save_slot_to_customize} to {new_slot_name}.")
-            break
+            os.rename(f"{save_slot_to_customize}_save_data.py", f"{new_save_slot_name}_save_data.py")
+            print(f"Successfully renamed {save_slot_to_customize} to {new_save_slot_name}.")
+            return new_save_slot_name
         else:
             print(f"There is already a save slot with the name {new_save_slot_name}.")
 
@@ -246,12 +246,12 @@ def save_data_from_session(inventory, money, available_fish, difficulty, save_sl
             save_file.write("active = True")
     print("Successfully saved data.")
 
-def save_slot_configuration():
-    save_slot_list = []
-    for save_slot in os.listdir("saves"):
-        if save_slot != "template.py" and not os.path.isdir(save_slot):
-            save_slot_list.append(save_slot[: - 13])
+def save_slot_configuration(active_save_slot):
     while True:
+        save_slot_list = []
+        for save_slot in os.listdir("saves"):
+            if save_slot != "template.py" and not os.path.isdir(save_slot):
+                save_slot_list.append(save_slot[: - 13])
         print("Here is a list of your current saves.")
         print_each_item_in_list(save_slot_list)
         while True:
@@ -263,6 +263,7 @@ def save_slot_configuration():
         if save_slot_to_customize not in save_slot_list and save_slot_to_customize != "quit": 
             create_save_slot(save_slot_to_customize)
             save_slot_list.append(save_slot_to_customize)
+            continue
         if save_slot_to_customize == "quit":
             break
         else: # Editing / customizing slots
@@ -272,19 +273,24 @@ def save_slot_configuration():
             while True:
                 action = input(f"What action would you like to do on {save_slot_to_customize}? ")
                 if action == "delete":
-                    confirmation = input(f'Are you sure you would like to delete {save_slot_to_customize}? Type "yes" to confirm. ')
+                    confirmation = input(f'Are you sure you would like to delete {save_slot_to_customize}? Type "yes" to confirm. This will also quit the program so the save slot cannot be remade when you save, assuming you are trying to delete the last loaded slot. ')
                     if confirmation == "yes":
                         os.remove(f"{save_slot_to_customize}_save_data.py")
                         print(f"The slot {save_slot_to_customize} has been successfully deleted. ")
-                        break
+                        if f"{save_slot_to_customize}_save_data.py" == active_save_slot:
+                            print("Exiting the program because the active save slot was deleted.")
+                            raise SystemExit()
+                        else:
+                            print("Returning")
+                            break
                     else:
                         print("Returning.")
                 elif action == "rename":
-                    rename_save_slot(save_slot_list, save_slot_to_customize)
+                    save_slot_to_customize = rename_save_slot(save_slot_list, save_slot_to_customize)
                 elif action == "make active":
                     confirmation = input('This will make this save file loaded when you run the program. If multiple save slots will be active, it will overwrite the preexisting save slots status. Types "yes" to confirm. ')
                     if confirmation == "yes":
-                        make_save_slot_active()
+                        make_save_slot_active(save_slot_to_customize)
                     else:
                         break
                 elif action == "quit":
