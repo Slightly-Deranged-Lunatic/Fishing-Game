@@ -5,9 +5,9 @@ import importlib
 import time
 import shutil
 ORIGINAL_WORKING_DIRECTORY = os.getcwd()
-def main(inventory, money, available_fish, difficulty, save_slot):
+def main(inventory, money, available_fish, difficulty, save_slot): 
     last_action = "save data"
-    print(f"The current save slot is {save_slot}.")
+    print(f"The current save slot is {save_slot[: - 13]}.")
     while True:
         AVAILABLE_ACTIONS = ["help", "fish", "shop", "quit", "view wallet", "view inventory", "save data", "configure saves", "configure difficulty",]
         action = input('What would you like to do? Type "help" for a list of actions, and as a reminder, you can type "quit" at any time to go back to the previous menu. ').lower()
@@ -25,7 +25,7 @@ def main(inventory, money, available_fish, difficulty, save_slot):
         elif action == "view inventory":
             print_inventory(inventory)
         elif action == "shop":
-            accessing_shop(inventory, money)
+            money = accessing_shop(inventory, money)
         elif action == "fish":
             fishing(inventory, available_fish, difficulty)
         elif action == "save data":
@@ -57,7 +57,7 @@ def selling(inventory, money):
                         money = money + SELL_VALUES.get(item)
                     del inventory[item]
             print("Transaction completed.")
-            break
+            return money
         elif keep_dupes_or_not == "duplicates":
             for item, amount in list(inventory.items()):
                 for count in range(amount):
@@ -67,7 +67,7 @@ def selling(inventory, money):
                         break
                     inventory[item] = 1
             print("Transaction completed.")
-            break
+            return money
         elif keep_dupes_or_not == "quit":
             break
         else:
@@ -99,7 +99,7 @@ def buying(inventory, money):
                 money = money - shop_inventory.get(item_to_buy)
                 inventory[item_to_buy] = 1
                 print(f'Thank you for your purchase of a {item_to_buy}, your current balance is {money} coins.')
-                break
+                return money
         elif item_to_buy == "quit":
             break
         else:
@@ -141,11 +141,11 @@ def accessing_shop(inventory, money):
     while True:
         buy_or_sell = input("Would you like to buy or sell today? ").lower()
         if buy_or_sell == "buy":
-            buying(inventory, money)
+            money = buying(inventory, money)
         elif buy_or_sell == "sell":
-            selling(inventory, money)
+            money = selling(inventory, money)
         elif buy_or_sell == "quit":
-            break
+            return money
         else:
             print("That wasn't a valid action.")
 
