@@ -7,8 +7,8 @@ import shutil
 ORIGINAL_WORKING_DIRECTORY = os.getcwd()
 def main(inventory, money, available_fish, difficulty, save_slot):
     last_action = "save data"
+    print(f"The current save slot is {save_slot}.")
     while True:
-        print(difficulty)
         AVAILABLE_ACTIONS = ["help", "fish", "shop", "quit", "view wallet", "view inventory", "save data", "configure saves", "configure difficulty",]
         action = input('What would you like to do? Type "help" for a list of actions, and as a reminder, you can type "quit" at any time to go back to the previous menu. ').lower()
         if action == "help":
