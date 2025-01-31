@@ -202,9 +202,8 @@ def check_for_valid_save():
     save_slot_list = []
     for save_slot in os.listdir():
         if save_slot != "template.py" and not os.path.isdir(save_slot):
-            save_slot_list.append(save_slot[: - 13])
-    for save_slot in save_slot_list:
-        print(save_slot)
+            save_slot_list.append(save_slot[: - 13]) # Appends save slot name without _save_data.py
+    print_each_item_in_list(save_slot_list)
     save_slot = input("It looks like you don't have any active slots, here is a list of your saves, type the name of a save to make it active. You can also type the name of a new save to create a new, valid one. ")
     if save_slot not in save_slot_list:
         os.chdir(ORIGINAL_WORKING_DIRECTORY)
