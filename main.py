@@ -320,17 +320,20 @@ def edit_equipment(equipment, inventory):
     while True:
         equipment_to_change = input("What equipment type would you like to change? ").lower()
         if equipment_to_change == "fishing rod":
-            print("Here is a list of fishing rods in your inventory")
-            for item in inventory:
-                if "fishing rod" in item:
-                    print(item)
-            while True:
-                new_fishing_rod = input("What fishing rod would you like to equip? ").lower()
-                if new_fishing_rod in inventory:
-                    equipment["Fishing Rod"] = new_fishing_rod
-                    print("Successfully changed equipment.")
-                    return
-                
+            edit_fishing_rod(equipment, inventory)
+            return
+
+def edit_fishing_rod(equipment, inventory):
+    print("Here is a list of fishing rods in your inventory")
+    for item in inventory:
+        if "fishing rod" in item:
+            print(item)
+    while True:
+        new_fishing_rod = input("What fishing rod would you like to equip? ").lower()
+        if new_fishing_rod in inventory:
+            equipment["Fishing Rod"] = new_fishing_rod
+            print("Successfully changed equipment.")
+            return
 check_for_valid_save()
 save_data, save_slot = load_inital_save_data()
 main(save_data.inventory, save_data.money, save_data.available_fish, save_data.difficulty, save_data.equipment, save_slot)
