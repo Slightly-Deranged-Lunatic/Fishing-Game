@@ -5,11 +5,11 @@ import importlib
 import time
 import shutil
 ORIGINAL_WORKING_DIRECTORY = os.getcwd()
-def main(inventory, money, available_fish, difficulty, save_slot): 
+def main(inventory, money, available_fish, difficulty, equipment, save_slot): 
     last_action = "save data"
     print(f"The current save slot is {save_slot[: - 13]}.")
     while True:
-        AVAILABLE_ACTIONS = ["help", "fish", "shop", "quit", "view wallet", "view inventory", "save data", "configure saves", "configure difficulty",]
+        AVAILABLE_ACTIONS = ["help", "fish", "shop", "quit", "view wallet", "view inventory", "save data", "configure saves", "configure difficulty", "edit equipment",]
         action = input('What would you like to do? Type "help" for a list of actions, and as a reminder, you can type "quit" at any time to go back to the previous menu. ').lower()
         if action == "help":
             print(f"Here is a list of available actions")
@@ -34,6 +34,8 @@ def main(inventory, money, available_fish, difficulty, save_slot):
             save_slot_configuration(save_slot)
         elif action == "configure difficulty":
             difficulty = configure_difficulty(difficulty)
+        elif action == "edit equipment":
+            edit_equipment(equipment, inventory)
         else:
             print("What you entered isn't a valid action, please try again.")
         if action in AVAILABLE_ACTIONS and action != "quit":
@@ -311,6 +313,24 @@ def load_inital_save_data():
                 os.chdir(ORIGINAL_WORKING_DIRECTORY)
                 return save_data, save_slot
 
+def edit_equipment(equipment, inventory):
+    print("Here is a list of your currently equipped equipment.")
+    for equipment_type, equipped_equipment in equipment.items():
+        print(f"{equipment_type} = {equipped_equipment}")
+    while True:
+        equipment_to_change = input("What equipment type would you like to change? ").lower()
+        if equipment_to_change == "fishing rod":
+            print("Here is a list of fishing rods in your inventory")
+            for item in inventory:
+                if "fishing rod" in item:
+                    print(item)
+            while True:
+                new_fishing_rod = input("What fishing rod would you like to equip? ").lower()
+                if new_fishing_rod in inventory:
+                    equipment["Fishing Rod"] = new_fishing_rod
+                    print("Successfully changed equipment.")
+                    return
+                
 check_for_valid_save()
 save_data, save_slot = load_inital_save_data()
-main(save_data.inventory, save_data.money, save_data.available_fish, save_data.difficulty, save_slot)
+main(save_data.inventory, save_data.money, save_data.available_fish, save_data.difficulty, save_data.equipment, save_slot)
