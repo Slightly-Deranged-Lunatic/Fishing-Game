@@ -29,7 +29,7 @@ def main(inventory, money, available_fish, difficulty, equipment, save_slot):
         elif action == "fish":
             fishing(inventory, available_fish, difficulty)
         elif action == "save data":
-            save_data_from_session(inventory, money, available_fish, difficulty, save_slot)
+            save_data_from_session(inventory, money, available_fish, difficulty, equipment, save_slot)
         elif action == "configure saves":
             save_slot_configuration(save_slot)
         elif action == "configure difficulty":
@@ -237,12 +237,12 @@ def rename_save_slot(save_slot_list, save_slot_to_customize):
         else:
             print(f"There is already a save slot with the name {new_save_slot_name}.")
 
-def save_data_from_session(inventory, money, available_fish, difficulty, save_slot):
+def save_data_from_session(inventory, money, available_fish, difficulty, equipment, save_slot):
     os.chdir("saves")
     if "active = True" in file_contents_without_newlines(save_slot):
         active_save_slot = True
     with open(save_slot, "w") as save_file:
-        save_file.write(f'inventory = {inventory}\nmoney = {money}\navailable_fish = {available_fish}\ndifficulty = "{difficulty}"\n')
+        save_file.write(f'inventory = {inventory}\nmoney = {money}\navailable_fish = {available_fish}\ndifficulty = "{difficulty}"\nequipment = {equipment}\n')
         if active_save_slot:
             save_file.write("active = True")
     print("Successfully saved data.")
