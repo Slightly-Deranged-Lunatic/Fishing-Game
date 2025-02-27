@@ -126,15 +126,6 @@ def fishing(inventory, available_fish, difficulty):
                 inventory[catch] = inventory[catch] + 1
             else:
                 inventory[catch] = 1
-            wants_to_see_inventory = input(f'You caught a {catch}! Press "y" to see your whole inventory, or "quit" to stop fishing. Press enter to fish again. ').lower()
-            if wants_to_see_inventory == "y":
-                print_inventory(inventory)
-                while True:
-                    ready_to_catch_more_fish = input("Press enter when you are ready to catch more fish. ")
-                    if ready_to_catch_more_fish == "":
-                        break
-            if wants_to_see_inventory == "quit":
-                break
         elif typed_word == "quit":
             break
         else:
