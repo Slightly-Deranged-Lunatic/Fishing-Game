@@ -5,6 +5,7 @@ import importlib
 import time
 import shutil
 ORIGINAL_WORKING_DIRECTORY = os.getcwd()
+
 def main(inventory, money, available_fish, difficulty, equipment, save_slot): 
     last_action = "save data"
     print(f"The current save slot is {save_slot[: - 13]}.")
@@ -116,7 +117,7 @@ def fishing(inventory, available_fish, difficulty):
     words_list = importlib.import_module(words)
     while True:
         print("You cast your line..")
-        catch = random.choice(available_fish)
+        catch = random.choices(available_fish.keys(), weights=available_fish.values())
         time.sleep(random.randint(3, 5))
         word_to_type = random.choice(words_list.words)
         typed_word = input(f"You feel something pull the line, your word to type is \n{word_to_type} ")
@@ -334,6 +335,7 @@ def edit_fishing_rod(equipment, inventory):
             equipment["Fishing Rod"] = new_fishing_rod
             print("Successfully changed equipment.")
             return
+
 check_for_valid_save()
 save_data, save_slot = load_inital_save_data()
 main(save_data.inventory, save_data.money, save_data.available_fish, save_data.difficulty, save_data.equipment, save_slot)
