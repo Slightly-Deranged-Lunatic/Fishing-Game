@@ -89,8 +89,9 @@ def sell():
         money_made += sell_values[item] * amount
     player_data["money"] += money_made
     print(f"You have {player_data["money"]} dollars and you made {money_made} dollars.")
-    
     player_data["inventory"].clear()
+    input("Press enter when you are ready to go back to the shop.")
+    clear()
 
 def buy():
     print("Well there ain't much here yet so maybe check back later...")
@@ -128,14 +129,16 @@ def load_json(path, json_name):
 
 def add_to_inventory(item):
     if item not in player_data["inventory"]:
-        player_data["inventory"] = 1
+        player_data["inventory"][item] = 1
     else:
-        player_data["inventory"] += 1
+        player_data["inventory"][item] += 1
 
 def view_inventory():
-    for item in player_data["inventory"]:
-        print(item)
-
+    print("Here is your inventory:")
+    for item, amount in player_data["inventory"].items():
+        print(f"{item} x {amount}")
+    input("Press enter when you are ready to go back to the main menu.")
+    clear()
 if __name__ == "__main__":
     player_data = load_json(os.getcwd(), "player.json")
     main()
