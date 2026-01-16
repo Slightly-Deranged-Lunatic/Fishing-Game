@@ -20,10 +20,11 @@ logging.basicConfig(
 
 def main():
     clear_logs()
-    VALID_ACTIONS = ["fish", "shop"]
+    VALID_ACTIONS = ["fish", "shop", "view inventory"]
     FUNCTION_MAP = {
         "fish": fish,
-        "shop": shop
+        "shop": shop,
+        "view inventory" : view_inventory
     }
     while True:
         print("What would you like to do?")
@@ -56,6 +57,7 @@ def fish():
             caught_fish = random.choice(fish_list["fish"])
             logging.info(f"User caught a {caught_fish}")
             print(f"You got a {caught_fish}")
+            add_to_inventory(caught_fish)
             user_done = input("Press enter to catch more fish, or type 'done' to leave. ").strip().lower()
         if user_done != "done":
             clear()
@@ -123,6 +125,16 @@ def load_json(path, json_name):
     except:
         logging.critical(f"Error when trying to load JSON {json_name}")
     return json_data
+
+def add_to_inventory(item):
+    if item not in player_data["inventory"]:
+        player_data["inventory"] = 1
+    else:
+        player_data["inventory"] += 1
+
+def view_inventory():
+    for item in player_data["inventory"]:
+        print(item)
 
 if __name__ == "__main__":
     player_data = load_json(os.getcwd(), "player.json")
