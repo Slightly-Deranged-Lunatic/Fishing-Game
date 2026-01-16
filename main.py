@@ -67,6 +67,7 @@ def fish():
             return
 
 def shop():
+    logging.info("User went to the shop")
     SHOP_MESSAGE = """Welcome to the shop!
 Would you like to buy or sell today? You can also type 'done' to leave the shop. """
     while True:
@@ -78,10 +79,11 @@ Would you like to buy or sell today? You can also type 'done' to leave the shop.
         elif action == "done":
             return
         else:
-            print("Looks like that wasn't an option, did you make a typo?")
             clear()
+            print("Looks like that wasn't an option, did you make a typo?")
 
 def sell():
+    logging.info("User went to sell stuff")
     item_prices = load_json(os.getcwd(), "item_prices.json")
     sell_values = item_prices["sell_price"]
     print("Selling your inventory")
@@ -95,6 +97,7 @@ def sell():
     clear()
 
 def buy():
+    logging.info("User tried to buy something... What a noob")
     print("Well there ain't much here yet so maybe check back later...")
 
 def clear_logs():
