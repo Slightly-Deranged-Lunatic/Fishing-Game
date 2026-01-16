@@ -20,11 +20,12 @@ logging.basicConfig(
 
 def main():
     clear_logs()
-    VALID_ACTIONS = ["fish", "shop", "view inventory"]
+    VALID_ACTIONS = ["fish", "shop", "view inventory", "quit"]
     FUNCTION_MAP = {
         "fish": fish,
         "shop": shop,
-        "view inventory" : view_inventory
+        "view inventory" : view_inventory,
+        "quit" : stop_playing
     }
     while True:
         print("What would you like to do?")
@@ -139,6 +140,11 @@ def view_inventory():
         print(f"{item} x {amount}")
     input("Press enter when you are ready to go back to the main menu.")
     clear()
+
+def stop_playing():
+    print("Bye bye!")
+    raise SystemExit
+
 if __name__ == "__main__":
     player_data = load_json(os.getcwd(), "player.json")
     main()
