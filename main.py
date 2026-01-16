@@ -20,9 +20,10 @@ logging.basicConfig(
 
 def main():
     clear_logs()
-    VALID_ACTIONS = ["fish",]
+    VALID_ACTIONS = ["fish", "shop"]
     FUNCTION_MAP = {
-        "fish" : fish
+        "fish": fish,
+        "shop": shop
     }
     while True:
         print("What would you like to do?")
@@ -62,6 +63,36 @@ def fish():
         else:
             return
 
+def shop():
+    SHOP_MESSAGE = """Welcome to the shop!
+Would you like to buy or sell today? You can also type 'done' to leave the shop. """
+    while True:
+        action = input(SHOP_MESSAGE).strip().lower()
+        if action == "sell":
+            sell()
+        elif action == "buy":
+            buy()
+        elif action == "done":
+            return
+        else:
+            print("Looks like that wasn't an option, did you make a typo?")
+            clear()
+
+def sell():
+    item_prices = load_json(os.getcwd(), "item_prices.json")
+    sell_values = item_prices["sell_price"]
+    print("Selling your inventory")
+    money_made = 0
+    for item, amount in player_data["inventory"].items():
+        money_made += sell_values[item] * amount
+    player_data["money"] += money_made
+    print(f"You have {player_data["money"]} dollars and you made {money_made} dollars.")
+    
+    player_data["inventory"].clear()
+
+def buy():
+    print("Well there ain't much here yet so maybe check back later...")
+
 def clear_logs():
     # Clears all but 5 most recent logs
     with(contextlib.chdir("Logs")):
@@ -87,9 +118,12 @@ def load_json(path, json_name):
                 json_data = json.load(data)
     except NotADirectoryError:
         logging.critical(f"{path} was not a directory when trying to load json {json_name}!")
+    except FileNotFoundError:
+        logging.critical(f"Json {json_name} was not found in {path}, does it exist?")
     except:
         logging.critical(f"Error when trying to load JSON {json_name}")
     return json_data
 
 if __name__ == "__main__":
+    player_data = load_json(os.getcwd(), "player.json")
     main()

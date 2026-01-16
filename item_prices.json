@@ -1,0 +1,10 @@
+{
+    "price": {
+        "tuna": 0,
+        "catfish": 0
+    },
+    "sell_price": {
+        "tuna": 2,
+        "catfish": 23
+    }
+}
