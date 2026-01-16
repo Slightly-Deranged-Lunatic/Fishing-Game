@@ -25,14 +25,17 @@ def main():
         "fish" : fish
     }
     while True:
-        clear()
         print("What would you like to do?")
         for i in VALID_ACTIONS:
             print(i)
         action = input("Please type it exactly as you see above: ").strip().lower()
         if action not in VALID_ACTIONS:
+            clear()
+            print("It looks like you made a typo somewhere.")
             continue
-        
+        function_to_do = FUNCTION_MAP.get(action)
+        clear()
+        function_to_do()
 
 def fish():
     WORD_TO_TYPE_COLOR = "\033[35m" # A magenta ish color
@@ -52,12 +55,13 @@ def fish():
             caught_fish = random.choice(fish_list["fish"])
             logging.info(f"User caught a {caught_fish}")
             print(f"You got a {caught_fish}")
-            user_done = input("Press enter to catch more fish, or type 'done' to leave.").strip().lower()
+            user_done = input("Press enter to catch more fish, or type 'done' to leave. ").strip().lower()
         if user_done != "done":
             clear()
             continue
         else:
             return
+
 def clear_logs():
     # Clears all but 5 most recent logs
     with(contextlib.chdir("Logs")):
@@ -86,5 +90,6 @@ def load_json(path, json_name):
     except:
         logging.critical(f"Error when trying to load JSON {json_name}")
     return json_data
+
 if __name__ == "__main__":
     main()
