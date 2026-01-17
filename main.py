@@ -27,6 +27,7 @@ def main():
         "view inventory" : view_inventory,
         "quit" : stop_playing
     }
+
     while True:
         print("What would you like to do?")
         for i in VALID_ACTIONS:
