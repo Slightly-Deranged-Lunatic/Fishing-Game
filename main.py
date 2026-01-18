@@ -20,13 +20,14 @@ logging.basicConfig(
 
 def main():
     clear_logs()
-    VALID_ACTIONS = ["fish", "shop", "view inventory", "quit"]
     FUNCTION_MAP = {
         "fish": fish,
         "shop": shop,
-        "view inventory" : view_inventory,
-        "quit" : stop_playing
+        "view inventory": view_inventory,
+        "save": save_data,
+        "quit": stop_playing
     }
+    VALID_ACTIONS = list(FUNCTION_MAP.keys())
 
     while True:
         print("What would you like to do?")
@@ -148,6 +149,12 @@ def view_inventory():
 def stop_playing():
     print("Bye bye!")
     raise SystemExit
+
+def save_data():
+    logging.info("User saving data.")
+    with open("player.json", "w") as save_data:
+        json.dump(player_data, save_data)
+    print("Data saved")
 
 if __name__ == "__main__":
     player_data = load_json(os.getcwd(), "player.json")
