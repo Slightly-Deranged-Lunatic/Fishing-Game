@@ -5,6 +5,7 @@ import time
 import random
 import logging
 import json
+from player_class import Player
 
 if not os.path.exists("Logs"):
     os.mkdir("Logs")
