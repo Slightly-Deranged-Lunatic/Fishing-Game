@@ -1,5 +1,4 @@
 import contextlib
-from math import e
 import os
 import datetime
 import time
@@ -154,7 +153,7 @@ def stop_playing():
 def save_data():
     logging.info("User saving data.")
     with open("player.json", "w") as save_data:
-        json.dump(player.__dict__, save_data)
+        json.dump(player.__dict__, save_data, indent = 4)
     print("Data saved")
 
 def load_player_data():
