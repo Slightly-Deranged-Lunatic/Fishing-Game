@@ -1,4 +1,5 @@
 import contextlib
+from math import e
 import os
 import datetime
 import time
@@ -91,11 +92,11 @@ def sell():
     sell_values = item_prices["sell_price"]
     print("Selling your inventory")
     money_made = 0
-    for item, amount in player_data["inventory"].items():
+    for item, amount in player.inventory.items():
         money_made += sell_values[item] * amount
-    player_data["money"] += money_made
-    print(f"You have {player_data["money"]} dollars and you made {money_made} dollars.")
-    player_data["inventory"].clear()
+    player.money += money_made
+    print(f"You have {player.money} dollars and you made {money_made} dollars.")
+    player.inventory.clear()
     input("Press enter when you are ready to go back to the shop.")
     clear()
 
@@ -127,23 +128,22 @@ def load_json(path, json_name):
             with(open(json_name)) as data:
                 json_data = json.load(data)
     except NotADirectoryError:
-        logging.critical(f"{path} was not a directory when trying to load json {json_name}!")
+        logging.exception(f"{path} was not a directory when trying to load json {json_name}!")
     except FileNotFoundError:
-        logging.critical(f"Json {json_name} was not found in {path}, does it exist?")
+        logging.exception(f"Json {json_name} was not found in {path}, does it exist?")
     except:
-        logging.critical(f"Error when trying to load JSON {json_name}")
+        logging.exception(f"Error when trying to load JSON {json_name}")
     return json_data
 
 def add_to_inventory(item):
-    if item not in player_data["inventory"]:
-        player_data["inventory"][item] = 1
+    if item not in player.inventory:
+        player.inventory[item] = 1
     else:
-        player_data["inventory"][item] += 1
+        player.inventory[item] += 1
 
 def view_inventory():
     print("Here is your inventory:")
-    for item, amount in player_data["inventory"].items():
-        print(f"{item} x {amount}")
+    player.show_inventory()
     input("Press enter when you are ready to go back to the main menu.")
     clear()
 
@@ -154,9 +154,25 @@ def stop_playing():
 def save_data():
     logging.info("User saving data.")
     with open("player.json", "w") as save_data:
-        json.dump(player_data, save_data)
+        json.dump(player.__dict__, save_data)
     print("Data saved")
 
+def load_player_data():
+    logging.info("Trying to get player data")
+    try:
+        player_save = load_json(os.getcwd(), "player.json")
+        name = player_save["name"]
+        money = player_save["money"]
+        inventory = player_save["inventory"]
+        player = Player(name, money, inventory)
+        logging.info("Found player data")
+    except FileNotFoundError:
+        logging.exception("Did not find any player data")
+        player = Player(name = "placeholder", money = 0, inventory = {})
+    except:
+        logging.exception("Something went wrong while trying to load data!")
+    return player
+
 if __name__ == "__main__":
-    player_data = load_json(os.getcwd(), "player.json")
+    player = load_player_data()
     main()
