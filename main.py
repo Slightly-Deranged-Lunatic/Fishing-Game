@@ -26,7 +26,8 @@ def main():
         "shop": shop,
         "view inventory": view_inventory,
         "save": save_data,
-        "quit": stop_playing
+        "quit": stop_playing,
+        "manage saves": manage_saves
     }
     VALID_ACTIONS = list(FUNCTION_MAP.keys())
 
@@ -126,13 +127,20 @@ def load_json(path, json_name):
             logging.info(f"Currently in {os.getcwd()}")
             with(open(json_name)) as data:
                 json_data = json.load(data)
+        error = False
     except NotADirectoryError:
+        error = True
         logging.exception(f"{path} was not a directory when trying to load json {json_name}!")
     except FileNotFoundError:
+        error = True
         logging.exception(f"Json {json_name} was not found in {path}, does it exist?")
     except:
+        error = True
         logging.exception(f"Error when trying to load JSON {json_name}")
-    return json_data
+    if error:
+        json_data = None
+    else:
+        return json_data
 
 def add_to_inventory(item):
     if item not in player.inventory:
@@ -151,27 +159,87 @@ def stop_playing():
     raise SystemExit
 
 def save_data():
+    ACTIVE_SAVE_SLOT = player.name
     logging.info("User saving data.")
-    with open("player.json", "w") as save_data:
-        json.dump(player.__dict__, save_data, indent = 4)
+    with contextlib.chdir("saves"):
+        with open(f"{ACTIVE_SAVE_SLOT}.json", "w") as save_data:
+            json.dump(player.__dict__, save_data, indent = 4)
     print("Data saved")
 
 def load_player_data():
     logging.info("Trying to get player data")
     try:
-        player_save = load_json(os.getcwd(), "player.json")
+        if ACTIVE_SAVE_SLOT == None:
+            logging.info("Save slot was None, raising FileNotFoundError")
+            raise FileNotFoundError
+    
+        player_save = load_json("saves", f"{ACTIVE_SAVE_SLOT}.json")
         name = player_save["name"]
         money = player_save["money"]
         inventory = player_save["inventory"]
         player = Player(name, money, inventory)
         logging.info("Found player data")
-    except FileNotFoundError:
-        logging.exception("Did not find any player data")
-        player = Player(name = "placeholder", money = 0, inventory = {})
     except:
         logging.exception("Something went wrong while trying to load data!")
+        player = Player(name = "default", money = 0, inventory = {})
     return player
 
+def manage_saves():
+    FUNCTION_MAP = {
+        "rename": rename_save_slot,
+        "delete": delete_save_slot,
+        "create a slot": create_save_slot,
+        "list saves": list_saves
+    }
+    VALID_ACTIONS = list(FUNCTION_MAP.keys())
+    while True:
+        print("What action would you like to do? Here is a list of all actions, please type it exactly as shown.")
+        for action in VALID_ACTIONS:
+            print(action)
+        selected_action = input().strip().lower()
+        if selected_action not in VALID_ACTIONS:
+            print("Please try again")
+            clear()
+            continue
+        function_to_do = FUNCTION_MAP.get(selected_action)
+        clear()
+        function_to_do()
+
+def rename_save_slot():
+    print("Here is a list of all your save slots.")
+    list_saves()
+    print("What save slot would you like to name?")
+    
+def delete_save_slot():
+    pass
+
+def create_save_slot():
+    pass 
+
+def list_saves():
+    for save in os.listdir("saves"):
+        print(save)
+
+def get_active_slot():
+    if not os.path.exists("saves"):
+        os.mkdir("saves")
+    saves = os.listdir("saves")
+    if len(saves) == 0:
+        return None
+    if len(saves) == 1:
+        return saves[0]
+    while True:
+        print("It looks like you have more than 1 save slot, please type in a save to continue.")
+        for save in saves:
+            print(save)
+        selected_save = input()
+        if selected_save not in saves:
+            print("Looks like that wasn't a slot, please try again.")
+            continue
+        return selected_save
+
 if __name__ == "__main__":
+    ACTIVE_SAVE_SLOT = get_active_slot()
+    print(f"Current selected save: {ACTIVE_SAVE_SLOT}")
     player = load_player_data()
     main()
