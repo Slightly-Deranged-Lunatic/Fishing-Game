@@ -20,7 +20,6 @@ logging.basicConfig(
 )
 
 def main():
-    clear_logs()
     FUNCTION_MAP = {
         "fish": fish,
         "shop": shop,
@@ -32,6 +31,7 @@ def main():
     VALID_ACTIONS = list(FUNCTION_MAP.keys())
 
     while True:
+        clear()
         print("What would you like to do?")
         for i in VALID_ACTIONS:
             print(i)
@@ -46,7 +46,7 @@ def main():
 
 def fish():
     WORD_TO_TYPE_COLOR = "\033[35m" # A magenta ish color
-    ENDCOLOR = "\033[m"
+    ENDCOLOR = "\033[m" # Removes the color
     logging.info("User went fishing.")
     while True:
         print("You cast your line")
@@ -159,29 +159,32 @@ def stop_playing():
     raise SystemExit
 
 def save_data():
-    ACTIVE_SAVE_SLOT = player.name
     logging.info("User saving data.")
+    if player.save == "None":
+        player.save = "New save"
     with contextlib.chdir("saves"):
-        with open(f"{ACTIVE_SAVE_SLOT}.json", "w") as save_data:
+        with open(f"{player.save}.json", "w") as save_data:
             json.dump(player.__dict__, save_data, indent = 4)
     print("Data saved")
 
 def load_player_data():
     logging.info("Trying to get player data")
+    player = Player(name = "default", money = 0, inventory = {}, save = get_active_slot())
     try:
-        if ACTIVE_SAVE_SLOT == None:
+        logging.info(f"Player save is {player.save}")
+        if player.save == None:
             logging.info("Save slot was None, raising FileNotFoundError")
             raise FileNotFoundError
-    
-        player_save = load_json("saves", f"{ACTIVE_SAVE_SLOT}.json")
+        player_save = load_json("saves", f"{player.save}.json")
         name = player_save["name"]
         money = player_save["money"]
         inventory = player_save["inventory"]
-        player = Player(name, money, inventory)
+        save = player.save
+        player = Player(name, money, inventory, save) # player instance is remade because its more readable than direct assignment
         logging.info("Found player data")
     except:
         logging.exception("Something went wrong while trying to load data!")
-        player = Player(name = "default", money = 0, inventory = {})
+        
     return player
 
 def manage_saves():
@@ -218,28 +221,35 @@ def create_save_slot():
 
 def list_saves():
     for save in os.listdir("saves"):
-        print(save)
+        print(save.removesuffix(".json"))
 
 def get_active_slot():
+    clear()
     if not os.path.exists("saves"):
         os.mkdir("saves")
-    saves = os.listdir("saves")
+    saves = get_saves()
     if len(saves) == 0:
         return None
     if len(saves) == 1:
         return saves[0]
+    print("It looks like you have more than 1 save slot, please type in a save to continue.")
     while True:
-        print("It looks like you have more than 1 save slot, please type in a save to continue.")
-        for save in saves:
-            print(save)
+        list_saves()
         selected_save = input()
         if selected_save not in saves:
+            clear()
             print("Looks like that wasn't a slot, please try again.")
             continue
         return selected_save
 
+def get_saves():
+    save_list = os.listdir("saves")
+    save_list_without_suffix = list()
+    for save in save_list:
+        save_list_without_suffix.append(save.removesuffix(".json"))
+    return save_list_without_suffix
+
 if __name__ == "__main__":
-    ACTIVE_SAVE_SLOT = get_active_slot()
-    print(f"Current selected save: {ACTIVE_SAVE_SLOT}")
+    clear_logs()
     player = load_player_data()
     main()
