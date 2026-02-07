@@ -7,8 +7,8 @@ import logging
 import json
 from player_class import Player
 
-if not os.path.exists("Logs"):
-    os.mkdir("Logs")
+if not os.path.exists("logs"):
+    os.mkdir("logs")
 
 logging.basicConfig(
     filename = f"Logs/{datetime.datetime.now().strftime("%Y-%m-%d %H-%M-%S")}.log",
@@ -106,11 +106,11 @@ def buy():
 
 def clear_logs():
     # Clears all but 5 most recent logs
-    with(contextlib.chdir("Logs")):
-        files = os.listdir()
-        files.sort()
-        files.reverse()
-        LOGS_TO_REMOVE = files[5:]
+    files = os.listdir("logs")
+    files.sort()
+    files.reverse()
+    LOGS_TO_REMOVE = files[5:]
+    with(contextlib.chdir("logs")):
         for file in LOGS_TO_REMOVE:
             os.remove(file)
         logging.info("Logs cleaned")
