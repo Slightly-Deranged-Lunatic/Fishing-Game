@@ -160,12 +160,12 @@ def stop_playing():
 
 def save_data():
     logging.info("User saving data.")
-    if player.save == "None":
-        player.save = "New save"
+    if player.save == None:
+        player.save = "New Save"
     with contextlib.chdir("saves"):
         with open(f"{player.save}.json", "w") as save_data:
             json.dump(player.__dict__, save_data, indent = 4)
-    print("Data saved")
+        logging.info(f"Saved data in {os.getcwd()} as {player.save}.json")
 
 def load_player_data():
     logging.info("Trying to get player data")
@@ -195,7 +195,9 @@ def manage_saves():
         "list saves": list_saves
     }
     VALID_ACTIONS = list(FUNCTION_MAP.keys())
+    VALID_ACTIONS.append("quit")
     while True:
+        save_list = get_saves()
         print("What action would you like to do? Here is a list of all actions, please type it exactly as shown.")
         for action in VALID_ACTIONS:
             print(action)
@@ -204,15 +206,27 @@ def manage_saves():
             print("Please try again")
             clear()
             continue
+        if selected_action == "quit":
+            return
         function_to_do = FUNCTION_MAP.get(selected_action)
         clear()
         function_to_do()
 
 def rename_save_slot():
-    print("Here is a list of all your save slots.")
-    list_saves()
-    print("What save slot would you like to name?")
-    
+    slot_to_rename = select_save_slot(action = "rename")
+    while True:
+        new_name = input(f"What would you like to rename {slot_to_rename} to? If you change your mind you can type 'quit' to quit. ").strip()
+        if new_name in get_saves():
+            print(f"You already have a slot named {slot_to_rename}, please make another name. ")
+            continue
+        if new_name == "quit":
+            return
+        with(contextlib.chdir("saves")):
+            os.rename(f"{slot_to_rename}.json", f"{new_name}.json")
+        logging.info(f"Renamed the save file {slot_to_rename} to {new_name}")
+        player.save = new_name
+        return
+
 def delete_save_slot():
     pass
 
@@ -248,6 +262,18 @@ def get_saves():
     for save in save_list:
         save_list_without_suffix.append(save.removesuffix(".json"))
     return save_list_without_suffix
+
+def select_save_slot(action):
+    save_list = get_saves()
+    while True:
+        list_saves()
+        selected_save = input(f"Please select a save slot to {action} ")
+        if selected_save not in save_list:
+            clear()
+            print("That wasn't a valid choice, please try again.")
+            continue
+        clear()
+        return selected_save
 
 if __name__ == "__main__":
     clear_logs()
