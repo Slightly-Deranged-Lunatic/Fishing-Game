@@ -178,9 +178,9 @@ def load_player_data():
             logging.info("Save slot was None, raising FileNotFoundError")
             raise FileNotFoundError
         player_save = load_json("saves", f"{player.save}.json")
-        name = player_save["name"]
-        money = player_save["money"]
-        inventory = player_save["inventory"]
+        name = player_save["_name"]
+        money = player_save["_money"]
+        inventory = player_save["_inventory"]
         save = player.save
         player = Player(name, money, inventory, save) # player instance is remade because its more readable than direct assignment
         logging.info("Found player data")
