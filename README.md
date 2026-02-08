@@ -1,10 +1,14 @@
 A CLI fishing game built in Python!
 
+# Features
+- A full save slot system
+- Fishing with a total of 2 different kinds of fish!
+- An incomplete shop!
+- Money!
+
 # Currently Planned Features
-- Actual stuff in the shop
+- Actual stuff in the shop (fishing rods, equipment)
 - Equipment system
-- Saves
-- Save slots and stuff like that
 - New evironments / biomes
 - More fish and rarities
 
