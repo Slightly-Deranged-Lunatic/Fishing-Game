@@ -31,7 +31,6 @@ def main():
     VALID_ACTIONS = list(FUNCTION_MAP.keys())
 
     while True:
-        clear()
         print("What would you like to do?")
         for i in VALID_ACTIONS:
             print(i)
@@ -54,7 +53,7 @@ def fish():
         time.sleep(random.randint(2, 4))
         clear()
         typed_word = input(f"Type the word '{WORD_TO_TYPE_COLOR}{word_to_type}{ENDCOLOR}' to catch the fish! ")
-        
+        clear()
         if typed_word != word_to_type:
             print("The fish got away! Oh no!")
         else:
@@ -64,11 +63,11 @@ def fish():
             print(f"You got a {caught_fish}")
             add_to_inventory(caught_fish)
             user_done = input("Press enter to catch more fish, or type 'done' to leave. ").strip().lower()
-        if user_done != "done":
             clear()
-            continue
-        else:
-            return
+            if user_done != "done":
+                continue
+            else:
+                return
 
 def shop():
     logging.info("User went to the shop")
@@ -76,6 +75,7 @@ def shop():
 Would you like to buy or sell today? You can also type 'done' to leave the shop. """
     while True:
         action = input(SHOP_MESSAGE).strip().lower()
+        clear()
         if action == "sell":
             sell()
         elif action == "buy":
@@ -97,7 +97,7 @@ def sell():
     player.money += money_made
     print(f"You have {player.money} dollars and you made {money_made} dollars.")
     player.inventory.clear()
-    input("Press enter when you are ready to go back to the shop.")
+    input("Press enter when you are ready to go back to the shop. ")
     clear()
 
 def buy():
@@ -151,7 +151,7 @@ def add_to_inventory(item):
 def view_inventory():
     print("Here is your inventory:")
     player.show_inventory()
-    input("Press enter when you are ready to go back to the main menu.")
+    input("Press enter when you are ready to go back to the main menu. ")
     clear()
 
 def stop_playing():
@@ -165,7 +165,8 @@ def save_data():
     with contextlib.chdir("saves"):
         with open(f"{player.save}.json", "w") as save_data:
             json.dump(player.__dict__, save_data, indent = 4)
-        logging.info(f"Saved data in {os.getcwd()} as {player.save}.json")
+        logging.info(f"Saved data in {os.getcwd()} as {player.save}.json")  
+    print("Data saved")
 
 def load_player_data():
     logging.info("Trying to get player data")
@@ -203,10 +204,11 @@ def manage_saves():
             print(action)
         selected_action = input().strip().lower()
         if selected_action not in VALID_ACTIONS:
-            print("Please try again")
             clear()
+            print("Looks like that wasn't a valid option, do you want to retry?")
             continue
         if selected_action == "quit":
+            clear()
             return
         function_to_do = FUNCTION_MAP.get(selected_action)
         clear()
@@ -216,8 +218,9 @@ def rename_save_slot(save_list):
     slot_to_rename = select_save_slot(action = "rename", save_list = save_list)
     while True:
         new_name = input(f"What would you like to rename {slot_to_rename} to? If you change your mind you can type 'quit' to quit. ").strip()
+        clear()
         if new_name in save_list:
-            print(f"You already have a slot named {slot_to_rename}, please make another name. ")
+            print(f"You already have a save named {slot_to_rename}, please make another name. ")
             continue
         if new_name == "quit":
             return
@@ -230,21 +233,28 @@ def rename_save_slot(save_list):
 def delete_save_slot(save_list):
     save_to_delete = select_save_slot(action = "delete", save_list = save_list)
     confirm = input(f"Are you sure you would like to permanently delete {save_to_delete}? Please type 'y' to confirm. ")
+    clear()
     if confirm != "y":
-        print("Very well")
+        print("Save has not been deleted")
         return
     with (contextlib.chdir("saves")):
         os.remove(f"{save_to_delete}.json")
+        print("Save has been deleted, please keep in mind the save will be remade if you save your data again.")
     return
 
 def create_save_slot(save_list):
     while True:
-        new_save = input("Type a new slot name to make a slot.")
+        new_save = input("Type a new save name to make a slot, or type 'quit' to quit. ").strip()
+        clear()
         if new_save in save_list:
-            print(f"You already have a slot named {new_save}. Try a new name.")
-        with(open(f"{new_save}.json", "a")) as new_save:
-            logging.info(f"Made a new save, {new_save}")
+            print(f"You already have a save named {new_save}. Try a new name.")
+            continue
+        if new_save == "quit":
             return
+        with(contextlib.chdir("saves")):
+            with(open(f"{new_save}.json", "a")) as new_save:
+                logging.info(f"Made a new save, {new_save}")
+                return
 
 def list_saves():
     for save in os.listdir("saves"):
@@ -267,6 +277,7 @@ def get_active_slot():
             clear()
             print("Looks like that wasn't a slot, please try again.")
             continue
+        clear()
         return selected_save
 
 def get_saves():
@@ -278,7 +289,7 @@ def get_saves():
 
 def select_save_slot(action, save_list):
     while True:
-        list_saves()
+        list_saves(save_list)
         selected_save = input(f"Please select a save slot to {action} ").strip()
         if selected_save not in save_list:
             clear()

@@ -9,7 +9,6 @@ class Player:
         return self._name
 
     def set_name(self, new_name):
-        print("Setting name pls")
         self._name = new_name
 
     name = property(get_name, set_name)
