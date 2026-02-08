@@ -26,7 +26,8 @@ def main():
         "view inventory": view_inventory,
         "save": save_data,
         "quit": stop_playing,
-        "manage saves": manage_saves
+        "manage saves": manage_saves,
+        "show money" : player.show_money
     }
     VALID_ACTIONS = list(FUNCTION_MAP.keys())
 

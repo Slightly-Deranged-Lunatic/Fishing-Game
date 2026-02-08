@@ -40,3 +40,6 @@ class Player:
     def show_inventory(self):
         for item, amount in self._inventory.items():
             print(f"{item} x {amount}")
+
+    def show_money(self):
+        print(f"Player has {self.money} dollars.")
