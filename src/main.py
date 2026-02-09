@@ -74,9 +74,9 @@ def fish(player):
             logging.info(f"User caught a {caught_fish}")
             print(f"You got a {caught_fish}")
             add_to_inventory(caught_fish, player)
-            user_done = input("Press enter to catch more fish, or type 'done' to leave. ").strip().lower()
+            user_done = input("Press enter to catch more fish, or type 'quit' to leave. ").strip().lower()
             utils.clear()
-            if user_done != "done":
+            if user_done != "quit":
                 continue
             else:
                 return
