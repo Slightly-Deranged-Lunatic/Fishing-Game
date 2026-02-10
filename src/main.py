@@ -155,5 +155,3 @@ def load_player_data():
 if __name__ == "__main__":
     utils.clear_logs()
     main()
-
-#TODO get rid of player.save fully
