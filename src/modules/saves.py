@@ -46,7 +46,6 @@ def rename_save_slot(save_list, player):
         with(contextlib.chdir("saves")):
             os.rename(f"{slot_to_rename}.json", f"{new_name}.json")
         logging.info(f"Renamed the save file {slot_to_rename} to {new_name}")
-        player.save = new_name
         return
 
 def delete_save_slot(save_list):
@@ -114,9 +113,9 @@ def save_data(player):
         print("Looks like you don't have any saves, please make a save by managing your saves to continue.")
         return
     else:
-        player.save = select_save_slot(action = "continue", save_list = save_list)
+        save_to_write = select_save_slot(action = "continue", save_list = save_list)
     with contextlib.chdir("saves"):
-        with open(f"{player.save}.json", "w") as save_data:
+        with open(f"{save_to_write}.json", "w") as save_data:
             json.dump(player.__dict__, save_data, indent = 4)
-        logging.info(f"Saved data in {os.getcwd()} as {player.save}.json")  
+        logging.info(f"Saved data in {os.getcwd()} as {save_to_write}.json")  
     print("Data saved")
