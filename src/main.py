@@ -134,19 +134,19 @@ def stop_playing():
 
 def load_player_data():
     logging.info("Trying to get player data")
-    player = Player(name = "default", money = 0, inventory = {}, save = saves.get_active_slot())
+    player = Player(money = 0, inventory = {})
+    player_selected_save = saves.get_active_save()
     try:
-        logging.info(f"Player save is {player.save}")
-        if player.save == None:
-            logging.info("Save slot was None, raising FileNotFoundError")
+        if player_selected_save == None:
+            logging.info("No save file found")
             raise FileNotFoundError
-        player_save = utils.load_json("saves", f"{player.save}.json")
-        name = player_save["_name"]
+        player_save = utils.load_json("saves", f"{player_selected_save}.json")
         money = player_save["_money"]
         inventory = player_save["_inventory"]
-        save = player.save
-        player = Player(name, money, inventory, save) # player instance is remade because its more readable than direct assignment
+        player = Player( money, inventory) # player instance is remade because its more readable than direct assignment
         logging.info("Found player data")
+    except FileNotFoundError:
+        logging.info(f"Using default player values due to no save file, save files are {saves.get_saves()}")
     except:
         logging.exception("Something went wrong while trying to load data!")
         
@@ -155,3 +155,5 @@ def load_player_data():
 if __name__ == "__main__":
     utils.clear_logs()
     main()
+
+#TODO get rid of player.save fully

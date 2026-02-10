@@ -75,7 +75,7 @@ def create_save_slot(save_list):
                 logging.info(f"Made a new save, {new_save}")
                 return
 
-def get_active_slot():
+def get_active_save():
     utils.clear()
     if not os.path.exists("saves"):
         os.mkdir("saves")
@@ -84,10 +84,8 @@ def get_active_slot():
         return None
     if len(save_list) == 1:
         return save_list[0]
-    print("It looks like you have more than 1 save slot, please type in a save to continue.")
-    while True:
-        selected_save = select_save_slot(action = "continue", save_list = save_list)
-        return selected_save
+    selected_save = select_save_slot(action = "continue", save_list = save_list)
+    return selected_save
 
 def list_saves():
     for save in os.listdir("saves"):
@@ -116,7 +114,7 @@ def save_data(player):
         print("Looks like you don't have any saves, please make a save by managing your saves to continue.")
         return
     else:
-        player.save = select_save_slot(action = "ccontinue", save_list = save_list)
+        player.save = select_save_slot(action = "continue", save_list = save_list)
     with contextlib.chdir("saves"):
         with open(f"{player.save}.json", "w") as save_data:
             json.dump(player.__dict__, save_data, indent = 4)
