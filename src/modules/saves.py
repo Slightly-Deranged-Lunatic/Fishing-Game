@@ -88,7 +88,7 @@ def get_active_save():
 
 def list_saves():
     for save in os.listdir("saves"):
-        print(save)
+        print(save.removesuffix(".json"))
 
 def get_saves():
     save_list = os.listdir("saves")
@@ -110,10 +110,12 @@ def select_save_slot(action, save_list):
 def save_data(player):
     save_list = get_saves()
     if len(save_list) == 0:
-        print("Looks like you don't have any saves, please make a save by managing your saves to continue.")
+        print("Looks like you don't have any saves, please make a save by managing your saves to continue. Press enter to acknowledge this message and continue.")
+        input()
+        utils.clear()
         return
     else:
-        save_to_write = select_save_slot(action = "continue", save_list = save_list)
+        save_to_write = select_save_slot(action = "save to", save_list = save_list)
     with contextlib.chdir("saves"):
         with open(f"{save_to_write}.json", "w") as save_data:
             json.dump(player.__dict__, save_data, indent = 4)
