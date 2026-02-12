@@ -119,7 +119,7 @@ def sell(player):
     money_made = 0
     items_file = utils.load_json("items", "fishes.json")
     biomes_list = items_file.keys()
-    
+
     for biome in biomes_list:
         fish_dict = items_file[biome]
         for fish, attributes in fish_dict.items():

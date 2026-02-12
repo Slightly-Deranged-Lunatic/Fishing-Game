@@ -3,6 +3,8 @@ import contextlib
 import logging
 import json
 
+import modules.saves as saves
+
 def clear_logs():
     # Clears all but 5 most recent logs
     files = os.listdir("logs")
@@ -26,17 +28,7 @@ def load_json(path, json_name):
             logging.info(f"Currently in {os.getcwd()}")
             with(open(json_name)) as data:
                 json_data = json.load(data)
-        error = False
-    except NotADirectoryError:
-        error = True
-        logging.exception(f"{path} was not a directory when trying to load json {json_name}!")
-    except FileNotFoundError:
-        error = True
-        logging.exception(f"Json {json_name} was not found in {path}, does it exist?")
+                return json_data
     except:
-        error = True
-        logging.exception(f"Error when trying to load JSON {json_name}")
-    if error:
-        json_data = None
-    else:
-        return json_data
+        logging.exception("Error occured while trying to load json! Program is gonna crash anyways so uhm")
+        raise SystemExit
