@@ -130,6 +130,8 @@ def sell(player):
     for biome in biomes_list:
         fish_dict = items_file[biome]
         for fish, attributes in fish_dict.items():
+            if fish not in player.inventory:
+                continue
             sell_price = attributes["sell price"]
             money_made += player.inventory[fish] * sell_price
             del player.inventory[fish]
@@ -180,7 +182,6 @@ def load_player_data():
     return player
 
 if __name__ == "__main__":
-    get_random_fish("pond")
-    #utils.clear_logs()
-    #main()
+    utils.clear_logs()
+    main()
 
