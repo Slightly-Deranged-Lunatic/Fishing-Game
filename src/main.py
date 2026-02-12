@@ -5,6 +5,10 @@ import time
 import random
 import logging
 import json
+import sys
+
+os.chdir(sys.path[0][0 : - 3]) # Here to standardize the directory the program is running from, should always be the parent directory of src
+print(os.getcwd())
 
 from classes.player_class import Player
 import modules.saves as saves
@@ -176,4 +180,3 @@ if __name__ == "__main__":
     utils.clear_logs()
     main()
 
-#TODO Windows os.chdir and sys.path stuff
