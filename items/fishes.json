@@ -2,11 +2,43 @@
     "pond" : {
         "koi" : {
             "sell price" : 1,
-            "probability" : 30
+            "rarity" : "common"
         },
         "catfish" : {
             "sell price" : 3,
-            "probability" : 10
+            "rarity" : "common"
+        },
+        "sunfish" : {
+            "sell price" : 1,
+            "rarity" : "common"
+        },
+        "tamasaba" : {
+            "sell price" : 3,
+            "rarity" : "rare"
+        },
+        "orandas" : {
+            "sell price" : 4,
+            "rarity" : "rare"
+        },
+        "comets" : {
+            "sell price" : 3,
+            "rarity" : "rare"
+        },
+        "goldfish" : {
+            "sell price" : 5,
+            "rarity" : "rare"
+        },
+        "mosquito fish" : {
+            "sell price" : 7,
+            "rarity" : "legendary"
+        },
+        "bass" : {
+            "sell price" : 6,
+            "rariry" : "legendary"
+        },
+        "shubunkin" : {
+            "sell price" : 10,
+            "rarity" : "mythical"
         }
     }
 }
