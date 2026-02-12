@@ -91,13 +91,17 @@ def get_random_fish(biome):
     items_file = utils.load_json("items", "fishes.json")
     fishes = items_file[biome]
     fish_list = list(fishes.keys())
+    fish_rarities = ["common", "rare", "legendary", "mythical"]
+    fish_rarity_weights = [35, 30, 20, 15]
+    fish_rarity = random.choices(fish_rarities, fish_rarity_weights)[0]
 
-    fish_probabilities = list()
-    for value in fishes.values():
-        fish_probabilities.append(value["probability"])
+    possible_fish = list()
+    for fish, attribute in fishes.items():
+        if attribute["rarity"] == fish_rarity:
+            possible_fish.append(fish)
 
-    caught_fish = random.choices(fish_list, fish_probabilities)
-    return caught_fish[0]
+    random_fish = random.choice(possible_fish)
+    return random_fish
 
 def shop(player):
     logging.info("User went to the shop")
@@ -176,6 +180,7 @@ def load_player_data():
     return player
 
 if __name__ == "__main__":
-    utils.clear_logs()
-    main()
+    get_random_fish("pond")
+    #utils.clear_logs()
+    #main()
 
