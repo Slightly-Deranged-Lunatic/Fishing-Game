@@ -16,11 +16,11 @@
             "sell price" : 3,
             "rarity" : "rare"
         },
-        "orandas" : {
+        "oranda" : {
             "sell price" : 4,
             "rarity" : "rare"
         },
-        "comets" : {
+        "comet" : {
             "sell price" : 3,
             "rarity" : "rare"
         },
