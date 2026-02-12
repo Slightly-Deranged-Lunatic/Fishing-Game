@@ -60,6 +60,7 @@ def fish(player):
     WORD_TO_TYPE_COLOR = "\033[35m" # A magenta ish color
     ENDCOLOR = "\033[m" # Removes the color
     logging.info("User went fishing.")
+
     while True:
         print("You cast your line")
         word_to_type = random.choice(utils.load_json("words_lists", "default.json")["words"])
@@ -67,11 +68,12 @@ def fish(player):
         utils.clear()
         typed_word = input(f"Type the word '{WORD_TO_TYPE_COLOR}{word_to_type}{ENDCOLOR}' to catch the fish! ")
         utils.clear()
+
         if typed_word != word_to_type:
             print("The fish got away! Oh no!")
         else:
-            fish_list = (utils.load_json(os.getcwd(), "fish_list.json"))
-            caught_fish = random.choice(fish_list["fish"])
+            caught_fish = get_random_fish("pond")
+            logging.info(type(caught_fish))
             logging.info(f"User caught a {caught_fish}")
             print(f"You got a {caught_fish}")
             add_to_inventory(caught_fish, player)
@@ -81,6 +83,18 @@ def fish(player):
                 continue
             else:
                 return
+
+def get_random_fish(biome):
+    items_file = utils.load_json("items", "fishes.json")
+    fishes = items_file[biome]
+    fish_list = list(fishes.keys())
+
+    fish_probabilities = list()
+    for value in fishes.values():
+        fish_probabilities.append(value["probability"])
+
+    caught_fish = random.choices(fish_list, fish_probabilities)
+    return caught_fish[0]
 
 def shop(player):
     logging.info("User went to the shop")
@@ -101,15 +115,20 @@ Would you like to buy or sell today? You can also type 'done' to leave the shop.
 
 def sell(player):
     logging.info("User went to sell stuff")
-    item_prices = utils.load_json(os.getcwd(), "item_prices.json")
-    sell_values = item_prices["sell_price"]
     print("Selling your inventory")
     money_made = 0
-    for item, amount in player.inventory.items():
-        money_made += sell_values[item] * amount
+    items_file = utils.load_json("items", "fishes.json")
+    biomes_list = items_file.keys()
+    
+    for biome in biomes_list:
+        fish_dict = items_file[biome]
+        for fish, attributes in fish_dict.items():
+            sell_price = attributes["sell price"]
+            money_made += player.inventory[fish] * sell_price
+            del player.inventory[fish]
+
     player.money += money_made
     print(f"You have {player.money} dollars and you made {money_made} dollars.")
-    player.inventory.utils.clear()
     input("Press enter when you are ready to go back to the shop. ")
     utils.clear()
 
@@ -156,3 +175,5 @@ def load_player_data():
 if __name__ == "__main__":
     utils.clear_logs()
     main()
+
+#TODO Windows os.chdir and sys.path stuff

@@ -2,6 +2,7 @@ import os
 import contextlib
 import logging
 import json
+
 def clear_logs():
     # Clears all but 5 most recent logs
     files = os.listdir("logs")

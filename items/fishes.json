@@ -1,0 +1,12 @@
+{
+    "pond" : {
+        "koi" : {
+            "sell price" : 1,
+            "probability" : 30
+        },
+        "catfish" : {
+            "sell price" : 3,
+            "probability" : 10
+        }
+    }
+}
