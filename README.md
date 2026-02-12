@@ -27,6 +27,4 @@ A CLI fishing game built in Python!
 
 2. Unzip the zip file in a directory of your choosing
 
-3. Run main.py in the folder and you're good to go!
-
-    3.1 This can be done by right clicking on the file
+3. Run main.py in the src folder and you're good to go!
